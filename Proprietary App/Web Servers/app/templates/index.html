@@ -1,0 +1,24 @@
+<!-- index.html-->
+
+{% extends "includes/raw.html" %}
+{% block title %}Home{% endblock %}
+{% block heading %}Home{% endblock %}
+{% block body %}
+{% if user == 'no name' %}
+<a href="/login">
+    <div align="right">
+        <span data-feather="user"></span>
+        <h4>Admin</h4>
+    </div>
+</a>
+{% else %}
+<a href="/logout">
+
+    <div align="right">
+        <span data-feather="user"></span>
+        <h4>{{user}}</h4>
+    </div>
+</a>
+{% endif %}
+
+{% endblock %}
