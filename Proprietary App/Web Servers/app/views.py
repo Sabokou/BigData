@@ -57,14 +57,11 @@ def book():
 
 
 @app.route('/loan_or_read_book', methods=['POST', 'GET'])
-def loan_or_read_book():
+def loan_book():
     if request.method == 'POST':
         id = request.form['book_id']
         if request.form['do'] == 'Loan':
             result = main.make_loan(int(request.form['book_id']))
-        if request.form['do'] == 'Read':
-            result = main.mark_book_as_read(int(request.form['book_id']))
-            print(f"Book read: {result}")
         if result is True:
             return render_template("includes/success.html", title='Success',
                                    text='Action executed successfully.')
@@ -178,20 +175,6 @@ def return_book_by_title():
         return render_template("includes/fail.html", title='Book not Returned',
                                text='You have not returned the book.')
 
-
-@app.route('/list_read_books', methods=['POST', 'GET'])  # Reading History
-# @login_required
-def list_read_books():
-    result = main.get_select(Selections.sql_read_books(session.get('user_id', None)))
-    print(request)
-    print(result)
-    if isinstance(result, DataFrame):
-        return render_template("includes/table.html", column_names=result.columns.values,
-                               row_data=list(result.values.tolist()),
-                               title='Reading History', sub_header='Already read', link_column='none', zip=zip)
-    else:
-        return render_template("includes/fail.html", title='Error',
-                               text='Site could not be loaded.')
 
 
 @app.route('/login', methods=['POST', 'GET'])

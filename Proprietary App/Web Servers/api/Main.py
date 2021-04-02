@@ -146,11 +146,6 @@ class Main:
             return n_id
         return False
 
-    def mark_book_as_read(self, book_id):
-        s_insert = f"INSERT INTO READ_BOOKS(n_book_id, n_user_id) VALUES ({book_id}, {self.s_user});"
-        self.exec_statement(s_insert)
-        return True
-
     def return_book(self, book_id):
         try:
             s_update = f"UPDATE borrow_item SET b_active = false WHERE n_book_id = {book_id};"

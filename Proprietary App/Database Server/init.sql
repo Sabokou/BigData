@@ -6,7 +6,6 @@ DROP VIEW IF EXISTS overview;
 DROP VIEW IF EXISTS book_extended;
 DROP TRIGGER IF EXISTS book_returned ON BORROW_ITEM;
 DROP TABLE IF EXISTS WROTE;
-DROP TABLE IF EXISTS READ_BOOKS;
 DROP TABLE IF EXISTS BORROW_ITEM;
 DROP TABLE IF EXISTS LOAN;
 DROP TABLE IF EXISTS USERS;
@@ -88,16 +87,6 @@ CREATE TABLE BORROW_ITEM
 );
 
 
-CREATE TABLE READ_BOOKS
-(
-    n_read_books_id SERIAL UNIQUE NOT NULL,
-    n_book_id       INT           NOT NULL,
-    n_user_id       INT           NOT NULL,
-    PRIMARY KEY (n_read_books_id),
-    FOREIGN KEY (n_book_id) REFERENCES BOOKS (n_book_id),
-    FOREIGN KEY (n_user_id) REFERENCES USERS (n_user_id)
-);
-
 
 
 CREATE TABLE WROTE
@@ -146,11 +135,6 @@ VALUES (14, 1, 2, false),
        (7, 2, 1, false),
        (21, 4, 3, false);
 
-INSERT INTO READ_BOOKS(n_book_id, n_user_id)
-VALUES (1, 2),
-       (3, 2),
-       (2, 1),
-       (4, 3);
 
 INSERT INTO WROTE(n_book_id, n_author_id)
 VALUES (1, 1),
