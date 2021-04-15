@@ -1,0 +1,55 @@
+<!-- about.html-->
+
+{% extends "includes/raw.html" %}
+{% block title %}Profile{% endblock %}
+{% block heading %}Profile{% endblock %}
+{% block body %}
+{% if user == 'no name' %}
+<a href="/login">
+    <div align="right">
+        <span data-feather="user"></span>
+        <h4>Admin</h4>
+    </div>
+</a>
+{% else %}
+<a href="/logout">
+<div align="right">
+    <span data-feather="user"></span>
+    <h4>{{user}}</h4>
+</div>
+</a>
+<div class="table-responsive">
+    <table class="table table-striped table-sm">
+        <tr>
+            {% for col in column_names %}
+            <th>{{col}}</th>
+            {% endfor %}
+        </tr>
+        {% for row in row_data %}
+        <tr>
+            {% for col, row_ in zip(column_names, row) %}
+            <td>{{row_}}</td>
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-striped table-sm">
+        <tr>
+            {% for col1 in column_names_fav %}
+            <th>{{col1}}</th>
+            {% endfor %}
+        </tr>
+        <tr>
+            {% for col1, row1_ in zip2(column_names_fav, row_data_fav) %}
+            <td>{{row1_}}</td>
+            {% endfor %}
+        </tr>
+    </table>
+</div>
+
+</a>
+{% endif %}
+{% endblock %}

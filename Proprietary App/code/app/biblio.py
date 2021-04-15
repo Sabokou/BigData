@@ -1,19 +1,23 @@
+import os
 import sqlalchemy
 import psycopg2
 import psycopg2.extras
 import pandas as pd
 import logging
 import re
+import time
+from multiprocessing.dummy import Pool as ThreadPool
 
-from api.selections import Selections
-from api.updates import Updates
+from app.selections import Selections
+from app.updates import Updates
+from app.book import Book
 
 
-class Main:
+class Biblio:
 
     def __init__(self):
         self.s_user = None
-        self.s_user = 1
+        self.s_user = None
 
         self.alchemy_engine = None
         self.alchemy_connection = None
@@ -23,8 +27,10 @@ class Main:
         self.b_initialised = False
 
         self.Selections = Selections()
+        self.Updates = Updates()
 
         self.connect()
+        self.test()
 
     # ###########################################################################################################
     # INIT FUNCTIONS
@@ -35,18 +41,21 @@ class Main:
 
         :return:
         """
-        try:
-            self.alchemy_engine = sqlalchemy.create_engine('postgres+psycopg2://postgres:1234@localhost:5433/postgres')
-            self.alchemy_connection = self.alchemy_engine.connect()
-            self.psycopg2_connection = psycopg2.connect(database="postgres", user="postgres", port=5433,
-                                                        password="1234",
-                                                        host="localhost")
-            self.b_connected = True
-            print("Database Connected")
-            logging.info("Connected to DB")
-        except Exception as an_exception:
-            logging.error(an_exception)
-            logging.error("Not connected to DB")
+
+        while self.b_connected is False:
+            try:
+                self.alchemy_engine = sqlalchemy.create_engine(
+                    'postgres+psycopg2://postgres:1234@database:5432/postgres')
+                self.alchemy_connection = self.alchemy_engine.connect()
+                self.psycopg2_connection = psycopg2.connect(database="postgres", user="postgres", port=5432,
+                                                            password="1234", host="database")
+                self.b_connected = True
+                print("Database Connected")
+                logging.info("Connected to DB")
+            except Exception as an_exception:
+                logging.error(an_exception)
+                logging.error("Not connected to DB")
+                time.sleep(5)
         return True
 
     def test(self, b_verbose=True):
@@ -56,12 +65,16 @@ class Main:
         :param b_verbose:
         :return:
         """
-        # needs data to query; use init_db() beforehand.
+        # checks if data / tables are present if it fails it initialises the database
         if self.b_connected:
-            df = pd.read_sql_query('SELECT * FROM books LIMIT 1', self.alchemy_connection)
-            if b_verbose:
-                print(df)
-            return df
+            try:
+                df = pd.read_sql_query('SELECT * FROM books LIMIT 1', self.alchemy_connection)
+                if b_verbose:
+                    print(df)
+                return df
+            except Exception as err:
+                self.init_db()
+                logging.error("Tables not initialized")
         return False
 
     def init_db(self):
@@ -75,16 +88,49 @@ class Main:
         :return:
         """
         if self.b_connected:
-            s_sql_statement = open("../../database/init.sql", "r").read()
+            # gets path to sql init file -- different paths in docker to running in test environment
+            try:
+                s_sql_statement = open("../database/init.sql", "r").read()
+                logging.info("Used original File Path")
+            except FileNotFoundError:
+                for root, dirs, files in os.walk("/src/"):
+                    if "init.sql" in files:
+                        path = os.path.join(root, "init.sql")
+
+                s_sql_statement = open(path, "r").read()
+                logging.error("Alternate File Path for init - Called from inside docker")
+
             s_sql_statement = re.sub(r"--.*|\n|\t", " ",
                                      s_sql_statement)  # cleaning file from comments and escape functions
 
             self.alchemy_connection.execute(s_sql_statement)
 
+            # Fill database with more books
+            # gets path to isbn list
+            try:
+                path = "../database/isbn.txt"
+                open(path)
+                logging.info("Used original File Path")
+            except FileNotFoundError:
+                for root, dirs, files in os.walk("/src/"):
+                    if "isbn.txt" in files:
+                        path = os.path.join(root, "isbn.txt")
+
+            # iterates over isbns and adds them via add_new_book function
+            results = list()
+            pool = ThreadPool(8)
+            results = pool.map(self.add_book_to_database, open(path, "r").readlines())
+
             logging.info("Database initialised")
             print("Database initialised")
             self.b_initialised = True
             return True
+
+    def add_book_to_database(self, isbn):
+        new_book = Book()
+        new_book.set_via_isbn(isbn)
+        self.add_new_book(new_book)
+        return True
 
     # ###########################################################################################################
     # USING FUNCTIONS
@@ -114,11 +160,17 @@ class Main:
         :param sql:
         :return:
         """
-        db_cursor = self.psycopg2_connection.cursor(cursor_factory=psycopg2.extras.DictCursor)
-        db_cursor.execute(sql)
-        self.psycopg2_connection.commit()
-        db_cursor.close()
-        return True
+        try:
+            db_cursor = self.psycopg2_connection.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            db_cursor.execute(sql)
+            self.psycopg2_connection.commit()
+            db_cursor.close()
+            return True
+        except psycopg2.errors.InFailedSqlTransaction:
+            self.b_connected = False
+            self.connect()
+            logging.error("Transaction Failed - Review given inputs!")
+            return False
 
     # ###########################################################################################################
     # EXECUTING FUNCTIONS
@@ -146,6 +198,14 @@ class Main:
             return n_id
         return False
 
+    def mark_book_as_read(self, book_id):
+        if self.s_user is None:
+            print(f"Not logged in: {self.s_user}")
+            return False
+        s_insert = f"INSERT INTO READ_BOOKS(n_book_id, n_user_id) VALUES ({book_id}, {self.s_user});"
+        self.exec_statement(s_insert)
+        return True
+
     def return_book(self, book_id):
         try:
             s_update = f"UPDATE borrow_item SET b_active = false WHERE n_book_id = {book_id};"
@@ -171,13 +231,21 @@ class Main:
                 else:
                     continue
                 if bool(b_is_available) is False:
-                    # return book
-                    result = self.return_book(book_id)
-                    if result is True:
-                        book_ids.pop(idx)
+                    book_ids.pop(idx)
+                    logging.error('Book not available')
+
+                    # # return book
+                    # result = self.return_book(book_id)
+                    # if result is True:
+                    #     book_ids.pop(idx)
                     continue
-            if len(book_ids) == 0:
-                return True
+            if len(book_ids) == 0:  # book does not exist
+                print("len(book) ids == 0")
+                return False
+            if self.s_user is None:
+                print(f"No User: {self.s_user}")
+                return False
+
             call = f"CALL new_loan({self.s_user}, ARRAY{book_ids}, {duration});"
             self.exec_statement(call)
         except Exception as an_exception:
@@ -192,7 +260,7 @@ class Main:
             self.exec_statement(call)
         except Exception as an_exception:
             logging.error(an_exception)
-            logging.error("Book couldn't be loaned.")
+            logging.error("Book couldn't be added.")
             return False
         return True
 
@@ -200,9 +268,9 @@ class Main:
 
 
 if __name__ == "__main__":
-    my_class = Main()
-    my_class.init_db()
-    my_class.get_book_id_by_isbn(9780575097568)
+    my_class = Biblio()
+    # my_class.init_db()
+    # my_class.get_book_id_by_isbn(9780575097568)
     # my_class.test(True)
     # my_class.list_read_books()
     # my_class.make_loan([1, 2], 14)

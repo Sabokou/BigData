@@ -1,0 +1,64 @@
+<!-- about.html-->
+
+{% extends "includes/raw.html" %}
+{% block title %}Update Authors{% endblock %}
+{% block heading %}Update or Delete Authors{% endblock %}
+{% block body %}
+
+<div>
+    <form action="/execute_change_author_manually" method="post">
+        <input type="number" name = "author_id" placeholder="Author ID">
+        <br><br>
+        <input type="text" name="author_first_name" placeholder="Author's first name">
+        <br><br>
+        <input type="text" name="author_last_name" placeholder="Author's last name">
+        <br><br>
+        <input type="number" name="address_id" placeholder="Address ID">
+
+        <br>
+        <br>
+
+        <input type="radio" id="update" name="operator" value="update" required>
+        <label for="update">Update Author</label><br>
+        <input type="radio" id="delete" name="operator" value="delete" required>
+        <label for="delete">Delete Author</label>
+
+        <br>
+        <br>
+
+        <input type="submit" name="execute_update_author_manually" value="Submit Change">
+    </form>
+</div>
+
+<br><br>
+
+<div class="table-responsive">
+    <table class="table table-striped table-sm">
+        <tr>
+            {% for col in column_names %}
+            <th>{{col}}</th>
+            {% endfor %}
+        </tr>
+        {% for row in row_data %}
+        <tr>
+            {% for col, row_ in zip(column_names, row) %}
+            <td>{{row_}}</td>
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+
+{% endblock %}
+
+
+
+
+
+
+
+
+
+
+
+

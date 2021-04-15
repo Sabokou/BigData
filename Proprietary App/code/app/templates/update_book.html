@@ -1,0 +1,72 @@
+<!-- about.html-->
+
+{% extends "includes/raw.html" %}
+{% block title %}Update book{% endblock %}
+{% block heading %}Update or Delete Books{% endblock %}
+{% block body %}
+
+<div>
+    <p>The combination of Book title and Book edition will be used to identify the book</p>
+    <form action="/execute_change_book_manually" method="post">
+        <h6>Which book to use?</h6>
+        <input type="book_title" name="book_title" placeholder="Book title" required>
+        <input type="book_edition" name = "book_edition" placeholder="Book edition" required>
+        <br><br>
+        <br><br>
+        <h6>Everything to be updated</h6>
+        <input type="book_isbn" name = "book_isbn" placeholder="book_isbn" required>
+        <br><br>
+        <input type="book_language" name="book_language" placeholder="book_language" required>
+        <br><br>
+        <input type="book_genre" name="book_genre" placeholder="book_genre" required>
+        <br><br>
+        <input type="publishing_year" name="publishing_year" placeholder="publishing_year" required>
+        <br><br>
+        <input type="location_id" name="location_id" placeholder="location_id" required>
+        <br><br>
+        <input type="reco_age" name="reco_age" placeholder="reco_age" required>
+        <br><br>
+        <br><br>
+        <input type="radio" id="update" name="operator" value="update" required>
+        <label for="Update">Update book</label><br>
+        <input type="radio" id="delete" name="operator" value="delete" required>
+        <label for="Delete">Delete book</label>
+        <br>
+        <br>
+        <input type="submit" name="execute_update_book_manually" value="Submit Change">
+    </form>
+
+</div>
+
+<br><br>
+
+<div class="table-responsive">
+    <table class="table table-striped table-sm">
+        <tr>
+            {% for col in column_names %}
+            <th>{{col}}</th>
+            {% endfor %}
+        </tr>
+        {% for row in row_data %}
+        <tr>
+            {% for col, row_ in zip(column_names, row) %}
+            <td>{{row_}}</td>
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+
+{% endblock %}
+
+
+
+
+
+
+
+
+
+
+
+

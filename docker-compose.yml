@@ -1,0 +1,16 @@
+version: '3.3'
+services:
+    database:
+        ports:
+            - '5433:5432'
+        environment:
+            - POSTGRES_PASSWORD=1234
+        image: 'postgres:12.2'
+        depends_on:
+          - webapp
+
+    webapp:
+      build: .
+      ports:
+        - '5000:5000'
+
