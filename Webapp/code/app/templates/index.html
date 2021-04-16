@@ -4,28 +4,10 @@
 {% block title %}Home{% endblock %}
 {% block heading %}Home{% endblock %}
 {% block body %}
-<div>
-   {% if user == 'no name' %}
-        <a href="/login">
-            <div align="right">
-                <span data-feather="user"></span>
-                <h4>None</h4>
-            </div>
-        </a>
-        {% else %}
-        <a href="/logout">
 
-            <div align="right">
-                <span data-feather="user"></span>
-                <h4>{{user}}</h4>
-            </div>
-        </a>
-    {% endif %}
-</div>
 <div align="center">
-    <p>Amount of overdue books: {{ amount_overdue }}</p>
     <p>Total amount of books in the system: {{ amount_book_total }}</p>
-    <p>Books currently loaned: {{ amount_books_loaned }}</p>
+    <p>Total amount of loans in the system: {{ amount_books_loaned }}</p>
 </div>
 
 <div>
@@ -42,21 +24,12 @@
     <br>
     <div align="left">
         <span data-feather="award"></span>
-        <h3>Why Biblio?</h3>
+        <h3>Most loaned books</h3>
         <p>
-            We think its important to know your possessions and keep it managed. We can help you to focus on reading rather than searching.
-
-            On the other hand its very important to share, so everybody can enjoy reading and learning new stuff. Biblio helps you to organize this process easily.
+         Overview over the most loaned books in the system
         </p>
     </div>
     <br>
-    <div align="left">
-        <span data-feather="more-horizontal"></span>
-        <h3>More</h3>
-        <p>
-            You want to know more? Check out the <a href="/about">About</a> page
-        </p>
-    </div>
 </div>
 
 

@@ -12,6 +12,6 @@ RUN pip install -r requirements.txt
 # copy folder into working directory
 COPY Webapp/ /Webapp
 
-EXPOSE 5000
+EXPOSE 4000
 
 CMD ["python", "/Webapp/code/run.py"]

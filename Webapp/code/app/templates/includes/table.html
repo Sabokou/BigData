@@ -10,6 +10,9 @@
     </form>
     <br>
 </div>
+<div>
+    <p>Button to generate automatically 50 loans</p>
+</div>
 <h3>{% block subheading %}{{sub_header}}{% endblock %}</h3>
 <div class="table-responsive">
     <table class="table table-striped table-sm">
@@ -31,7 +34,6 @@
             <td>
                 <form action="/loan_or_read_book" method="post">
                     <input type="submit" name="do" value='Loan'>
-                    <input type="submit" name="do" value='Read'>
                     <input type="hidden" name="book_id" value={{row_}}>
                 </form>
             </td>
