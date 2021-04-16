@@ -23,7 +23,6 @@ SELECT      books.n_book_id,
             books.dt_publishing_date, 
             books.s_book_language, 
             books.n_recommended_age, 
-            books.b_is_availalbe, 
             author.s_first_name, 
             author.s_last_name, 
             publisher.s_pub_name
