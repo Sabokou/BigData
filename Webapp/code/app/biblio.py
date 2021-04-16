@@ -93,7 +93,7 @@ class Biblio:
                 s_sql_statement = open("../database/init.sql", "r").read()
                 logging.info("Used original File Path")
             except FileNotFoundError:
-                for root, dirs, files in os.walk("/src/"):
+                for root, dirs, files in os.walk("/Webapp/"):
                     if "init.sql" in files:
                         path = os.path.join(root, "init.sql")
 
@@ -112,7 +112,7 @@ class Biblio:
                 open(path)
                 logging.info("Used original File Path")
             except FileNotFoundError:
-                for root, dirs, files in os.walk("/src/"):
+                for root, dirs, files in os.walk("/Webapp/"):
                     if "isbn.txt" in files:
                         path = os.path.join(root, "isbn.txt")
 
