@@ -14,11 +14,10 @@ class Book:
         self.book_genre = None
         self.book_isbn = None
         self.publishing_year = None
-        self.location_id = None
         self.reco_age = None
 
     def set_manually(self, param_list):
-        if len(param_list) == 10:
+        if len(param_list) == 9:
             return False
 
         self.author_first_names = param_list[0]
@@ -30,8 +29,7 @@ class Book:
         self.book_genre = param_list[6]
         self.book_isbn = param_list[7]
         self.publishing_year = param_list[8]
-        self.location_id = param_list[9]
-        self.reco_age = param_list[10]
+        self.reco_age = param_list[9]
 
         print(f"Author Firstname: {self.author_first_names}")
 
@@ -122,7 +120,6 @@ class Book:
                         '{self.book_language}', 
                         '{self.book_genre}', 
                         '{self.book_isbn}', 
-                        {self.location_id},
                         {self.reco_age});"""
 
         call = call.replace("'None'", "NULL").replace("None", "NULL")

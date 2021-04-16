@@ -175,12 +175,6 @@ class Biblio:
     # ###########################################################################################################
     # EXECUTING FUNCTIONS
 
-    def set_user(self, s_username, s_pwd):
-        s_sql = f"SELECT n_user_id FROM users WHERE s_user_name = '{s_username}' AND s_password = '{s_pwd}'"
-        df = self.get_select(s_sql)
-        n_id = int(df['n_user_id'])
-        self.s_user = n_id
-        return self.s_user
 
     def get_book_id_by_isbn(self, isbn):
         s_sql = f"SELECT n_book_id FROM books WHERE s_isbn = '{isbn}'"
@@ -197,25 +191,6 @@ class Biblio:
             n_id = int(df['n_book_id'])
             return n_id
         return False
-
-    def mark_book_as_read(self, book_id):
-        if self.s_user is None:
-            print(f"Not logged in: {self.s_user}")
-            return False
-        s_insert = f"INSERT INTO READ_BOOKS(n_book_id, n_user_id) VALUES ({book_id}, {self.s_user});"
-        self.exec_statement(s_insert)
-        return True
-
-    def return_book(self, book_id):
-        try:
-            s_update = f"UPDATE borrow_item SET b_active = false WHERE n_book_id = {book_id};"
-            self.exec_statement(s_update)
-            logging.info(f"Book {book_id} returned")
-        except Exception as an_exception:
-            logging.error(an_exception)
-            logging.error("Book couldn't be returned.")
-            return False
-        return True
 
     def make_loan(self, book_ids, duration=14):
         try:
@@ -242,11 +217,8 @@ class Biblio:
             if len(book_ids) == 0:  # book does not exist
                 print("len(book) ids == 0")
                 return False
-            if self.s_user is None:
-                print(f"No User: {self.s_user}")
-                return False
 
-            call = f"CALL new_loan({self.s_user}, ARRAY{book_ids}, {duration});"
+            call = f"CALL new_loan(ARRAY{book_ids}, {duration});"
             self.exec_statement(call)
         except Exception as an_exception:
             logging.error(an_exception)
