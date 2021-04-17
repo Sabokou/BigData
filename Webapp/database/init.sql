@@ -1,4 +1,4 @@
--- CREATE; PROCEDURE; TRIGGER; TRANSACTION; VIEW; 
+-- CREATE; INSERT; PROCEDURE; TRANSACTION; VIEW; 
 -- Missing: SELECT; INSERT; 
 
 -- Drop all old
@@ -83,7 +83,7 @@ CREATE TABLE WROTE
     FOREIGN KEY (n_author_id) REFERENCES AUTHOR (n_author_id) ON DELETE CASCADE
 );
 
-
+-- Insert Values into table
 INSERT INTO AUTHOR(s_first_name, s_last_name)
 VALUES ('Ben', 'Aaronovitch'),
        ('Atia', 'Abawi'),
