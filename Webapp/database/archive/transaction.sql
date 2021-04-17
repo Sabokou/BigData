@@ -1,4 +1,3 @@
-
 create or replace procedure add_book( 
     author_first_name   VARCHAR(128),
     author_last_name    VARCHAR(128),
