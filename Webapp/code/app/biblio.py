@@ -8,16 +8,11 @@ import re
 import time
 from multiprocessing.dummy import Pool as ThreadPool
 
-from app.selections import Selections
-from app.updates import Updates
-from app.book import Book
 
 
 class Biblio:
 
     def __init__(self):
-        self.s_user = None
-        self.s_user = None
 
         self.alchemy_engine = None
         self.alchemy_connection = None
@@ -25,9 +20,6 @@ class Biblio:
 
         self.b_connected = False
         self.b_initialised = False
-
-        self.Selections = Selections()
-        self.Updates = Updates()
 
         self.connect()
         self.test()
@@ -126,11 +118,6 @@ class Biblio:
             self.b_initialised = True
             return True
 
-    def add_book_to_database(self, isbn):
-        new_book = Book()
-        new_book.set_via_isbn(isbn)
-        self.add_new_book(new_book)
-        return True
 
     # ###########################################################################################################
     # USING FUNCTIONS
@@ -176,22 +163,6 @@ class Biblio:
     # EXECUTING FUNCTIONS
 
 
-    def get_book_id_by_isbn(self, isbn):
-        s_sql = f"SELECT n_book_id FROM books WHERE s_isbn = '{isbn}'"
-        df = self.get_select(s_sql)
-        if df.shape == (1, 1):
-            n_id = int(df['n_book_id'])
-            return n_id
-        return False
-
-    def get_book_id_by_title_edition(self, title, edition=1):
-        s_sql = f"SELECT n_book_id FROM books WHERE s_title = '{title}' AND n_book_edition = {edition}"
-        df = self.get_select(s_sql)
-        if df.shape == (1, 1):
-            n_id = int(df['n_book_id'])
-            return n_id
-        return False
-
     def make_loan(self, book_ids, duration=14):
         try:
             if isinstance(book_ids, int):
@@ -226,15 +197,6 @@ class Biblio:
             return False
         return True
 
-    def add_new_book(self, obj_book):
-        try:
-            call = obj_book.get_s_sql_call()
-            self.exec_statement(call)
-        except Exception as an_exception:
-            logging.error(an_exception)
-            logging.error("Book couldn't be added.")
-            return False
-        return True
 
     # ############################################################################################################
 
