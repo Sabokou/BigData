@@ -19,9 +19,8 @@ def index():
 
 @app.route('/book')
 def book():
-    result = bib.get_select("""SELECT n_book_id, s_isbn AS ISBN, s_title AS Title, s_genre AS Genre,
-                                      n_publishing_year AS Publishing_year, s_book_language AS language,
-                                      n_recommended_age AS age, s_pub_name AS Publisher,
+    result = bib.get_select("""SELECT n_book_id, s_isbn AS ISBN, s_title AS Title, n_publishing_year AS Publishing_year, 
+                                      s_book_language AS language, n_recommended_age AS age,
                                       s_aut_first_name AS Author_first_name, s_aut_last_name AS Author_last_name
                                FROM BOOKS""")
     if isinstance(result, DataFrame):
@@ -49,8 +48,7 @@ def loan_book():
 @app.route('/loans', methods=['POST', 'GET'])
 def loans():
     result = bib.get_select("""SELECT L.n_loan_id AS Loan_ID, L.ts_now as Timestamp, B.s_isbn AS ISBN, B.s_title AS Title, 
-                                      B.s_pub_name AS Publisher, B.s_aut_first_name AS Author_first_name,   
-                                      B.s_aut_last_name AS Author_last_name
+                                      B.s_aut_first_name AS Author_first_name, B.s_aut_last_name AS Author_last_name
                                FROM Loan AS L
                                     LEFT JOIN Books AS B ON (L.n_book_id = B.n_book_id)""")
     print(request)

@@ -7,14 +7,10 @@ class Book:
     def __init__(self) -> object:
         self.author_first_names = None
         self.author_last_names = None
-        self.publisher_name = None
         self.book_title = None
-        self.book_edition = 1
         self.book_language = None
-        self.book_genre = None
         self.book_isbn = None
         self.publishing_year = None
-        self.location_id = None
         self.reco_age = None
 
     def set_via_isbn(self, s_isbn: str = "9780062893338"):
@@ -56,14 +52,11 @@ class Book:
             self.author_first_names.append(last_name)
             self.author_last_names.append(first_names)
 
-        self.publisher_name = meta_data["Publisher"]
         self.book_title = meta_data["Title"]
         self.book_language = meta_data["Language"]
         self.publishing_year = meta_data['Year']
         self.book_isbn = list(meta_data.values())[0]
 
-        if self.publisher_name == "":
-            self.publisher_name = None
 
     def get_s_sql_call(self) -> str or None:
 
@@ -78,10 +71,8 @@ class Book:
                         ARRAY{self.author_first_names}, 
                         ARRAY{self.author_last_names},
                         {self.publishing_year}, 
-                        '{self.publisher_name}',
                         '{self.book_title}', 
                         '{self.book_language}', 
-                        '{self.book_genre}', 
                         '{self.book_isbn}', 
                         {self.reco_age});"""
 

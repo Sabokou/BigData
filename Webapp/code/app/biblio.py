@@ -180,38 +180,6 @@ class Biblio:
 
 
     def make_loan(self, book_id):
-        # try:
-        #     if isinstance(book_ids, int):
-        #         book_ids = [book_ids]
-        #     idx = -1
-        #     for book_id in book_ids:
-        #         idx += 1
-        #         s_sql = f"SELECT b_is_available FROM BOOKS WHERE n_book_id = {book_id}"
-        #         df = self.get_select(s_sql)
-        #         if df.shape == (1, 1):
-        #             b_is_available = df['b_is_available'].values[0]
-        #         else:
-        #             continue
-        #         if bool(b_is_available) is False:
-        #             book_ids.pop(idx)
-        #             logging.error('Book not available')
-
-        #             # # return book
-        #             # result = self.return_book(book_id)
-        #             # if result is True:
-        #             #     book_ids.pop(idx)
-        #             continue
-        #     if len(book_ids) == 0:  # book does not exist
-        #         print("len(book) ids == 0")
-        #         return False
-
-        #     call = f"CALL new_loan(ARRAY{book_ids}, {duration});"
-        #     self.exec_statement(call)
-        # except Exception as an_exception:
-        #     logging.error(an_exception)
-        #     logging.error("Book couldn't be loaned.")
-        #     return False
-        # return True
         call = f"""CALL new_loan({book_id});"""
         self.exec_statement(call)
         return True

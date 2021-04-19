@@ -14,13 +14,11 @@ CREATE TABLE BOOKS
     n_book_id         SERIAL UNIQUE NOT NULL,
     s_isbn            VARCHAR(13) UNIQUE,
     s_title           VARCHAR(4096) NOT NULL,
-    s_genre           CHAR(20),
     n_publishing_year INT,
     s_book_language   CHAR(3),
     n_recommended_age INT,
-    s_pub_name        VARCHAR(128)  NOT NULL,
     s_aut_first_name  VARCHAR(128),
-    s_aut_last_name   VARCHAR(128)  NOT NULL,
+    s_aut_last_name   VARCHAR(128),
     PRIMARY KEY (n_book_id)
 );
 
@@ -36,12 +34,12 @@ CREATE TABLE LOAN
 
 -- Insert Values into table
 
-INSERT INTO BOOKS(s_isbn, s_title, s_genre, n_publishing_year, s_book_language, n_recommended_age,
-                   s_pub_name, s_aut_first_name, s_aut_last_name)
-VALUES ('9780575097568', 'Rivers of London', 'Urban Fantasy', 2010, 'en', NULL, 'Heyne Verlag', 'Ben', 'Aaronovitch'), 
-       ('9780345524591', 'Moon Over Soho', 'Urban Fantasy', 2011, NULL, NULL, 'Heyne Verlag', 'Ben', 'Aaronovitch'),   
-       ('9780525516019', 'A Land of Permanent Goodbyes', NULL, NULL, 'en', 18, 'Akademische Arbeitsgemeinschaft Verlag', 'Atia', 'Abawi'),  
-       (NULL, 'Der Text des Lebens', NULL, NULL, 'de', 40, 'Andiamo Verlag', 'Susanne', 'Abel'); 
+INSERT INTO BOOKS(s_isbn, s_title, n_publishing_year, s_book_language, n_recommended_age,
+                   s_aut_first_name, s_aut_last_name)
+VALUES ('9780575097568', 'Rivers of London', 2010, 'en', NULL, 'Ben', 'Aaronovitch'), 
+       ('9780345524591', 'Moon Over Soho', 2011, NULL, NULL, 'Ben', 'Aaronovitch'),   
+       ('9780525516019', 'A Land of Permanent Goodbyes',  NULL, 'en', 18, 'Atia', 'Abawi'),  
+       (NULL, 'Der Text des Lebens', NULL, 'de', 40, 'Susanne', 'Abel'); 
 
 INSERT INTO LOAN (ts_now, n_book_id)
 VALUES ('2020-11-28 12:12:12', 1),
@@ -54,10 +52,8 @@ create or replace procedure add_book(
     author_first_name VARCHAR(128)[],
     author_last_name VARCHAR(128)[],
     publishing_year INT,
-    publisher_name VARCHAR(128),
     book_title VARCHAR(4096),
     book_language CHAR(3),
-    book_genre CHAR(20),
     book_isbn VARCHAR(13),
     recommended_age INT DEFAULT NULL
 )
@@ -69,16 +65,14 @@ DECLARE
 
 BEGIN
 
-    INSERT INTO BOOKS(s_isbn, s_title, s_genre, n_publishing_year, s_book_language, n_recommended_age, s_pub_name, s_aut_first_name, s_aut_last_name)
+    INSERT INTO BOOKS(s_isbn, s_title, n_publishing_year, s_book_language, n_recommended_age, s_aut_first_name, s_aut_last_name)
         VALUES (book_isbn,
                 book_title,
-                book_genre,
                 publishing_year,
                 book_language,
                 recommended_age,
-                publisher_name,
-                author_first_name[0],
-                author_last_name[0])
+                author_first_name[1],
+                author_last_name[1])
         RETURNING n_book_id INTO book_id;
 
 END;
