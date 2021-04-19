@@ -10,20 +10,20 @@ app.secret_key = 'dljsawadslqk24e21cjn!Ew@@dsa5'
 
 @app.route('/')  # Home
 def index():
-    count_loaned_books = bib.get_select("""SELECT COUNT(DISTINCT (n_borrow_item_id)) AS Amount
-                                               FROM borrow_item AS bi
-                                                    LEFT JOIN loan AS l ON bi.n_loan_id = l.n_loan_id
-                                               WHERE bi.b_active = 'TRUE'""").iat[0, 0]
     count_total_books = bib.get_select("SELECT COUNT(DISTINCT(n_book_id)) FROM books").iat[0, 0]
+    count_loaned_books = bib.get_select("SELECT COUNT(DISTINCT(n_loan_id)) FROM loan").iat[0, 0]
 
     return render_template("/index.html", amount_book_total=count_total_books,
-                           amount_books_loaned=count_loaned_books)
+                            amount_books_loaned=count_loaned_books)
 
 
 @app.route('/book')
 def book():
-    result = bib.get_select("SELECT * FROM book_extended")
-    result = result.drop_duplicates(subset=["n_book_id"], keep='last')  # better visualisation
+    result = bib.get_select("""SELECT n_book_id, s_isbn AS ISBN, s_title AS Title, s_genre AS Genre,
+                                      n_publishing_year AS Publishing_year, s_book_language AS language,
+                                      n_recommended_age AS age, s_pub_name AS Publisher,
+                                      s_aut_first_name AS Author_first_name, s_aut_last_name AS Author_last_name
+                               FROM BOOKS""")
     if isinstance(result, DataFrame):
         return render_template("table.html", column_names=result.columns.values,
                                row_data=list(result.values.tolist()),
@@ -48,7 +48,11 @@ def loan_book():
 
 @app.route('/loans', methods=['POST', 'GET'])
 def loans():
-    result = bib.get_select("SELECT * FROM book_extended")
+    result = bib.get_select("""SELECT L.n_loan_id AS Loan_ID, L.ts_now as Timestamp, B.s_isbn AS ISBN, B.s_title AS Title, 
+                                      B.s_pub_name AS Publisher, B.s_aut_first_name AS Author_first_name,   
+                                      B.s_aut_last_name AS Author_last_name
+                               FROM Loan AS L
+                                    LEFT JOIN Books AS B ON (L.n_book_id = B.n_book_id)""")
     print(request)
     if isinstance(result, DataFrame):
         return render_template("table.html", column_names=result.columns.values,

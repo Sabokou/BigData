@@ -80,11 +80,9 @@ class Book:
                         {self.publishing_year}, 
                         '{self.publisher_name}',
                         '{self.book_title}', 
-                        {self.book_edition},
                         '{self.book_language}', 
                         '{self.book_genre}', 
                         '{self.book_isbn}', 
-                        {self.location_id},
                         {self.reco_age});"""
 
         call = call.replace("'None'", "NULL").replace("None", "NULL")
