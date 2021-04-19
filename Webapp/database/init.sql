@@ -9,7 +9,6 @@ DROP TABLE IF EXISTS WROTE;
 DROP TABLE IF EXISTS READ_BOOKS;
 DROP TABLE IF EXISTS BORROW_ITEM;
 DROP TABLE IF EXISTS LOAN;
-DROP TABLE IF EXISTS USERS;
 DROP TABLE IF EXISTS BOOKS;
 DROP TABLE IF EXISTS PUBLISHER;
 DROP TABLE IF EXISTS AUTHOR;
@@ -22,14 +21,14 @@ CREATE TABLE AUTHOR
     n_author_id  SERIAL UNIQUE NOT NULL,
     s_first_name VARCHAR(128),
     s_last_name  VARCHAR(128)  NOT NULL,
-    PRIMARY KEY (n_author_id),
+    PRIMARY KEY (n_author_id)
 );
 
 CREATE TABLE PUBLISHER
 (
     n_publisher_id SERIAL UNIQUE NOT NULL,
     s_pub_name     VARCHAR(128)  NOT NULL,
-    PRIMARY KEY (n_publisher_id),
+    PRIMARY KEY (n_publisher_id)
 );
 
 
@@ -53,16 +52,13 @@ CREATE TABLE LOAN
 (
     n_loan_id SERIAL UNIQUE NOT NULL,
     ts_now    TIMESTAMP     NOT NULL DEFAULT current_timestamp,
-    n_user_id INT           NOT NULL,
-    PRIMARY KEY (n_loan_id),
-    FOREIGN KEY (n_user_id) REFERENCES USERS (n_user_id) ON DELETE CASCADE
+    PRIMARY KEY (n_loan_id)
 );
 
 
 CREATE TABLE BORROW_ITEM
 (
     n_borrow_item_id SERIAL UNIQUE NOT NULL,
-    n_duration       INT           NOT NULL, --in days
     n_book_id        INT           NOT NULL,
     n_loan_id        INT           NOT NULL,
     b_active         BOOL          NOT NULL DEFAULT true,
@@ -144,7 +140,6 @@ SELECT books.n_book_id,
        books.n_publishing_year,
        books.s_book_language,
        books.n_recommended_age,
-       books.b_is_available,
        author.s_first_name,
        author.s_last_name,
        publisher.s_pub_name
@@ -167,6 +162,7 @@ create or replace procedure add_book(
     book_language CHAR(3),
     book_genre CHAR(20),
     book_isbn VARCHAR(13),
+    location_id INT DEFAULT NULL,
     recommended_age INT DEFAULT NULL
 )
 -- without addresses

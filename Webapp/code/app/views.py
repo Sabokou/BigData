@@ -33,7 +33,6 @@ def book():
         return render_template("fail.html", title='Error',
                                text='Site could not be loaded.')
 
-
 @app.route('/loan_book', methods=['POST', 'GET'])
 def loan_book():
     if request.method == 'POST':
@@ -49,7 +48,7 @@ def loan_book():
 
 @app.route('/loans', methods=['POST', 'GET'])
 def loans():
-    result = bib.get_select("SELECT * FROM book_extended WHERE b_is_available = False")
+    result = bib.get_select("SELECT * FROM book_extended")
     print(request)
     if isinstance(result, DataFrame):
         return render_template("table.html", column_names=result.columns.values,

@@ -8,6 +8,7 @@ import re
 import time
 from multiprocessing.dummy import Pool as ThreadPool
 
+from app.book import Book
 
 
 class Biblio:
@@ -118,7 +119,22 @@ class Biblio:
             self.b_initialised = True
             return True
 
+    def add_book_to_database(self, isbn):
+        new_book = Book()
+        new_book.set_via_isbn(isbn)
+        self.add_new_book(new_book)
+        return True
 
+    def add_new_book(self, obj_book):
+        try:
+            call = obj_book.get_s_sql_call()
+            self.exec_statement(call)
+        except Exception as an_exception:
+            logging.error(an_exception)
+            logging.error("Book couldn't be added.")
+            return False
+        return True
+    
     # ###########################################################################################################
     # USING FUNCTIONS
 
@@ -163,7 +179,7 @@ class Biblio:
     # EXECUTING FUNCTIONS
 
 
-    def make_loan(self, book_ids, duration=14):
+    def make_loan(self, book_ids):
         try:
             if isinstance(book_ids, int):
                 book_ids = [book_ids]
