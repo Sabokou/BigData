@@ -4,7 +4,13 @@
 {% block body %}
 
 <div>
-    <p>Button to generate automatically 50 loans</p>
+    <form action="/search_loans" method="POST">
+        <input name="search_text" type="text" placeholder="Search">
+        <input type="submit" value="Search" name="search">
+    </form>
+    <form action="/generate_loan_book" method="post">
+        <input type="submit" name="do" value='Loan 50 Books automatically'>
+    </form>
 </div>
 <div class="table-responsive">
     <table class="table table-striped table-sm">

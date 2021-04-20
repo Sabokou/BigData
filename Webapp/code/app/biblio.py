@@ -179,6 +179,12 @@ class Biblio:
     # EXECUTING FUNCTIONS
 
 
+    def generate_loan(self, book_ids):
+        for i in book_ids:
+            call = f"""CALL new_loan({i});"""
+            self.exec_statement(call)
+        return True
+
     def make_loan(self, book_id):
         call = f"""CALL new_loan({book_id});"""
         self.exec_statement(call)
