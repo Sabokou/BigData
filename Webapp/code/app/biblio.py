@@ -180,15 +180,25 @@ class Biblio:
 
 
     def generate_loan(self, book_ids):
+        count_loaned_books_beginning = self.get_select("SELECT COUNT(DISTINCT(n_loan_id)) FROM loan").iat[0, 0]
         for i in book_ids:
             call = f"""CALL new_loan({i});"""
             self.exec_statement(call)
-        return True
+        count_loaned_books_new = self.get_select("SELECT COUNT(DISTINCT(n_loan_id)) FROM loan").iat[0, 0]
+        if count_loaned_books_new>count_loaned_books_beginning:
+            return True
+        else:
+            return False
 
     def make_loan(self, book_id):
+        count_loaned_books_beginning = self.get_select("SELECT COUNT(DISTINCT(n_loan_id)) FROM loan").iat[0, 0]
         call = f"""CALL new_loan({book_id});"""
         self.exec_statement(call)
-        return True
+        count_loaned_books_new = self.get_select("SELECT COUNT(DISTINCT(n_loan_id)) FROM loan").iat[0, 0]
+        if count_loaned_books_new>count_loaned_books_beginning:
+            return True
+        else:
+            return False
 
     # ############################################################################################################
 

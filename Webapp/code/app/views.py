@@ -61,9 +61,10 @@ def loan_book():
 def generate_loan_book():
     if request.method == 'POST':
         if request.form['do'] == 'Loan 50 Books automatically':
+            count_total_books = bib.get_select("SELECT COUNT(DISTINCT(n_book_id)) FROM books").iat[0, 0]
             randomIDs = []
             for i in range(0,50):
-                x = random.randint(1,37)
+                x = random.randint(1,count_total_books)
                 randomIDs.append(x)
             result = bib.generate_loan(randomIDs)
         if result is True:
