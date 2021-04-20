@@ -6,11 +6,20 @@ services:
         environment:
             - POSTGRES_PASSWORD=1234
         image: 'postgres:12.2'
-        depends_on:
-          - webapp
+        restart: always
+
 
     webapp:
       build: .
       ports:
         - '4000:5000'
+      depends_on:
+        - database
+        - memcached
+      restart: on-failure
 
+    memcached:
+      image: 'memcached'
+      ports:
+        - '11211:11211'
+      restart: always
