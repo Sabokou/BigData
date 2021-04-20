@@ -3,18 +3,18 @@ from pandas import DataFrame
 import psycopg2
 import random
 
-from app.biblio import Biblio
+from app.legerible import Legerible
 from app import app
 
-bib = Biblio()
+leg = Legerible()
 app.secret_key = 'dljsawadslqk24e21cjn!Ew@@dsa5'
 
 @app.route('/')  # Home
 def index():
-    count_total_books = bib.get_select("SELECT COUNT(DISTINCT(n_book_id)) FROM books").iat[0, 0]
-    count_loaned_books = bib.get_select("SELECT COUNT(DISTINCT(n_loan_id)) FROM loan").iat[0, 0]
+    count_total_books = leg.get_select("SELECT COUNT(DISTINCT(n_book_id)) FROM books").iat[0, 0]
+    count_loaned_books = leg.get_select("SELECT COUNT(DISTINCT(n_loan_id)) FROM loan").iat[0, 0]
 
-    result = bib.get_select(""" SELECT *
+    result = leg.get_select(""" SELECT *
                                 FROM(SELECT ROW_NUMBER() OVER (ORDER BY rp.Number_of_Loans DESC) AS TOP_Loans, rp.Book_ID, rp.ISBN, rp.Title, rp.Author_first_name, 
                                             rp.Author_last_name, rp.Number_of_Loans
                                     FROM(SELECT l.n_book_id AS Book_ID, b.s_isbn AS ISBN, b.s_title AS Title, 
@@ -33,7 +33,7 @@ def index():
 
 @app.route('/book')
 def book():
-    result = bib.get_select("""SELECT n_book_id, s_isbn AS ISBN, s_title AS Title, n_publishing_year AS Publishing_year, 
+    result = leg.get_select("""SELECT n_book_id, s_isbn AS ISBN, s_title AS Title, n_publishing_year AS Publishing_year, 
                                       s_book_language AS language,s_aut_first_name AS Author_first_name, 
                                       s_aut_last_name AS Author_last_name
                                FROM BOOKS""")
@@ -50,7 +50,7 @@ def book():
 def loan_book():
     if request.method == 'POST':
         if request.form['do'] == 'Loan':
-            result = bib.make_loan(int(request.form['book_id']))
+            result = leg.make_loan(int(request.form['book_id']))
         if result is True:
             return render_template("success.html", title='Success',
                                    text='Action executed successfully.')
@@ -61,12 +61,12 @@ def loan_book():
 def generate_loan_book():
     if request.method == 'POST':
         if request.form['do'] == 'Loan 50 Books automatically':
-            count_total_books = bib.get_select("SELECT COUNT(DISTINCT(n_book_id)) FROM books").iat[0, 0]
+            count_total_books = leg.get_select("SELECT COUNT(DISTINCT(n_book_id)) FROM books").iat[0, 0]
             randomIDs = []
             for i in range(0,50):
                 x = random.randint(1,count_total_books)
                 randomIDs.append(x)
-            result = bib.generate_loan(randomIDs)
+            result = leg.generate_loan(randomIDs)
         if result is True:
             return render_template("success.html", title='Success',
                                    text='Action executed successfully.')
@@ -76,7 +76,7 @@ def generate_loan_book():
 
 @app.route('/loans', methods=['POST', 'GET'])
 def loans():
-    result = bib.get_select("""SELECT L.n_loan_id AS Loan_ID, L.ts_now as Timestamp, B.s_isbn AS ISBN, B.s_title AS Title, 
+    result = leg.get_select("""SELECT L.n_loan_id AS Loan_ID, L.ts_now as Timestamp, B.s_isbn AS ISBN, B.s_title AS Title, 
                                       B.s_aut_first_name AS Author_first_name, B.s_aut_last_name AS Author_last_name
                                FROM Loan AS L
                                     LEFT JOIN Books AS B ON (L.n_book_id = B.n_book_id)""")
@@ -95,7 +95,7 @@ def loans():
 @app.route('/search_books', methods=['POST', 'GET'])
 def search_books():
     text = request.form['search_text']
-    result = bib.get_select(f"""SELECT n_book_id, s_isbn AS ISBN, s_title AS Title, n_publishing_year AS Publishing_year, 
+    result = leg.get_select(f"""SELECT n_book_id, s_isbn AS ISBN, s_title AS Title, n_publishing_year AS Publishing_year, 
                                       s_book_language AS language, s_aut_first_name AS Author_first_name, 
                                       s_aut_last_name AS Author_last_name 
                                 FROM Books 
@@ -112,7 +112,7 @@ def search_books():
 @app.route('/search_loans', methods=['POST', 'GET'])
 def search_loans():
     text = request.form['search_text']
-    result = bib.get_select(f"""SELECT L.n_loan_id AS Loan_ID, L.ts_now as Timestamp, B.s_isbn AS ISBN, B.s_title AS Title, 
+    result = leg.get_select(f"""SELECT L.n_loan_id AS Loan_ID, L.ts_now as Timestamp, B.s_isbn AS ISBN, B.s_title AS Title, 
                                       B.s_aut_first_name AS Author_first_name, B.s_aut_last_name AS Author_last_name
                                 FROM Loan AS L
                                     LEFT JOIN Books AS B ON (L.n_book_id = B.n_book_id)

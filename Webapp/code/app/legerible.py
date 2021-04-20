@@ -11,7 +11,7 @@ from multiprocessing.dummy import Pool as ThreadPool
 from app.book import Book
 
 
-class Biblio:
+class Legerible:
 
     def __init__(self):
 
@@ -204,7 +204,7 @@ class Biblio:
 
 
 if __name__ == "__main__":
-    my_class = Biblio()
+    my_class = Legerible()
     # my_class.init_db()
     # my_class.get_book_id_by_isbn(9780575097568)
     # my_class.test(True)
