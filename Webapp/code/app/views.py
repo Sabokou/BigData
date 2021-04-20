@@ -34,8 +34,8 @@ def index():
 @app.route('/book')
 def book():
     result = bib.get_select("""SELECT n_book_id, s_isbn AS ISBN, s_title AS Title, n_publishing_year AS Publishing_year, 
-                                      s_book_language AS language, n_recommended_age AS age,
-                                      s_aut_first_name AS Author_first_name, s_aut_last_name AS Author_last_name
+                                      s_book_language AS language,s_aut_first_name AS Author_first_name, 
+                                      s_aut_last_name AS Author_last_name
                                FROM BOOKS""")
     if isinstance(result, DataFrame):
         return render_template("Books.html", column_names=result.columns.values,
@@ -95,8 +95,8 @@ def loans():
 def search_books():
     text = request.form['search_text']
     result = bib.get_select(f"""SELECT n_book_id, s_isbn AS ISBN, s_title AS Title, n_publishing_year AS Publishing_year, 
-                                      s_book_language AS language, n_recommended_age AS age,
-                                      s_aut_first_name AS Author_first_name, s_aut_last_name AS Author_last_name 
+                                      s_book_language AS language, s_aut_first_name AS Author_first_name, 
+                                      s_aut_last_name AS Author_last_name 
                                 FROM Books 
                                 WHERE s_title LIKE '%{text}%'""")
     if isinstance(result, DataFrame):
