@@ -11,7 +11,6 @@ class Book:
         self.book_language = None
         self.book_isbn = None
         self.publishing_year = None
-        self.reco_age = None
 
     def set_via_isbn(self, s_isbn: str = "9780062893338"):
         # remove "-" from isbn string
@@ -73,8 +72,7 @@ class Book:
                         {self.publishing_year}, 
                         '{self.book_title}', 
                         '{self.book_language}', 
-                        '{self.book_isbn}', 
-                        {self.reco_age});"""
+                        '{self.book_isbn}');"""
 
         call = call.replace("'None'", "NULL").replace("None", "NULL")
         print(call)

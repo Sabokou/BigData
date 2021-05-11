@@ -2,8 +2,6 @@
 -- Missing: SELECT; INSERT; 
 
 -- Drop all old
-DROP VIEW IF EXISTS overview;
-DROP VIEW IF EXISTS book_extended;
 DROP TABLE IF EXISTS LOAN;
 DROP TABLE IF EXISTS BOOKS;
 
@@ -16,7 +14,6 @@ CREATE TABLE BOOKS
     s_title           VARCHAR(4096) NOT NULL,
     n_publishing_year INT,
     s_book_language   CHAR(3),
-    n_recommended_age INT,
     s_aut_first_name  VARCHAR(128),
     s_aut_last_name   VARCHAR(128),
     PRIMARY KEY (n_book_id)
@@ -34,12 +31,12 @@ CREATE TABLE LOAN
 
 -- Insert Values into table
 
-INSERT INTO BOOKS(s_isbn, s_title, n_publishing_year, s_book_language, n_recommended_age,
+INSERT INTO BOOKS(s_isbn, s_title, n_publishing_year, s_book_language,
                    s_aut_first_name, s_aut_last_name)
-VALUES ('9780575097568', 'Rivers of London', 2010, 'en', NULL, 'Ben', 'Aaronovitch'), 
-       ('9780345524591', 'Moon Over Soho', 2011, NULL, NULL, 'Ben', 'Aaronovitch'),   
-       ('9780525516019', 'A Land of Permanent Goodbyes',  NULL, 'en', 18, 'Atia', 'Abawi'),  
-       (NULL, 'Der Text des Lebens', NULL, 'de', 40, 'Susanne', 'Abel'); 
+VALUES ('9780575097568', 'Rivers of London', 2010, 'en', 'Ben', 'Aaronovitch'), 
+       ('9780345524591', 'Moon Over Soho', 2011, NULL, 'Ben', 'Aaronovitch'),   
+       ('9780525516019', 'A Land of Permanent Goodbyes',  NULL, 'en', 'Atia', 'Abawi'),  
+       (NULL, 'Der Text des Lebens', NULL, 'de', 'Susanne', 'Abel'); 
 
 INSERT INTO LOAN (ts_now, n_book_id)
 VALUES ('2020-11-28 12:12:12', 1),
@@ -54,8 +51,7 @@ create or replace procedure add_book(
     publishing_year INT,
     book_title VARCHAR(4096),
     book_language CHAR(3),
-    book_isbn VARCHAR(13),
-    recommended_age INT DEFAULT NULL
+    book_isbn VARCHAR(13)
 )
     language plpgsql
 AS
@@ -65,12 +61,11 @@ DECLARE
 
 BEGIN
 
-    INSERT INTO BOOKS(s_isbn, s_title, n_publishing_year, s_book_language, n_recommended_age, s_aut_first_name, s_aut_last_name)
+    INSERT INTO BOOKS(s_isbn, s_title, n_publishing_year, s_book_language, s_aut_first_name, s_aut_last_name)
         VALUES (book_isbn,
                 book_title,
                 publishing_year,
                 book_language,
-                recommended_age,
                 author_first_name[1],
                 author_last_name[1])
         RETURNING n_book_id INTO book_id;
