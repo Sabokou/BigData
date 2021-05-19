@@ -1,43 +1,46 @@
+#Begin: Deployment
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: postgres-deployment
   labels:
-    app: postgres-deployment
+    service: database
+  name: database
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: postgres
+      service: database
   template:
     metadata:
       labels:
-        app: postgres
+        service: database
     spec:
-      # Mount the configmap volume
-      # This is an excerpt of deployment.spec.template.spec
       containers:
-        - name: postgres
-          image: 'postgres:12.2'
-          # Set required environment variables to initialize the container
-          env:
+        # environment variables used for postgres config
+        - env:
             - name: POSTGRES_PASSWORD
               value: "1234"
+          image: postgres:12.2
+          name: database
           ports:
-            - containerPort: 5532
+          # default port for postgres
+            - containerPort: 5432 #previously 5332
+      restartPolicy: Always
+#End: Deployment
 
 ---
 #Begin: Service
 apiVersion: v1
 kind: Service
 metadata:
-  name: postgres-service
+  labels:
+    service: database
+  name: database
 spec:
-  selector:
-    app: postgres
   ports:
-    - name: postgres-xproto
-      protocol: TCP
-      port: 5532
-      targetPort: 5532
+  # using default ports for postgres
+    - port: 5432 #previously 5333
+      targetPort: 5432 #previously 5332
+  selector:
+    service: database
 #End: Service

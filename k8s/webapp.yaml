@@ -1,39 +1,34 @@
-#Begin: Deployment
-apiVersion: apps/v1
-kind: Deployment
+#Begin: Pod (might be changed to deployment)
+apiVersion: v1
+kind: Pod
 metadata:
-  name: project-bib
   labels:
-    app: project-bib
+    service: webapp
+  name: webapp
 spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: webapp
-  template:
-    metadata:
-      labels:
-        app: webapp
-    spec:
-      containers:
-        - name: web-app
-          image: .
-          ports:
-            - containerPort: 5000
+  containers:
+    - image: webapp
+      name: webapp
+      ports:
+        - containerPort: 5000
+  restartPolicy: OnFailure
+
+# End: Pod
 
 ---
 #Begin: Service
-kind: Service
 apiVersion: v1
+kind: Service
 metadata:
-  name: web-service
+  labels:
+    service: webapp
+  name: webapp
 spec:
-  selector:
-    app: webapp
   ports:
-    - protocol: TCP
-      port: 5000
+    - port: 80
       targetPort: 5000
+  selector:
+    service: webapp
 #End: Service
 
 ---
@@ -41,9 +36,7 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: project-bib-ingress
-  annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /
+  name: legerible-ingress
 spec:
   rules:
     - http:
@@ -52,6 +45,7 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: project-bib-service
+                name: webapp
                 port:
-                  number: 3000
+                  number: 80
+#End: Ingress

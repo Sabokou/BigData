@@ -2,9 +2,12 @@
 -- Missing: SELECT; INSERT; 
 
 -- Drop all old
-DROP TABLE IF EXISTS LOAN;
-DROP TABLE IF EXISTS BOOKS;
-DROP TABLE IF EXISTS USERS;
+
+-- Dirty fix of issue #11 on github
+
+-- DROP TABLE IF EXISTS LOAN;
+-- DROP TABLE IF EXISTS BOOKS;
+-- DROP TABLE IF EXISTS USERS;
 
 
 -- Create tables
