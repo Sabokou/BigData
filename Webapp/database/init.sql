@@ -4,6 +4,7 @@
 -- Drop all old
 DROP TABLE IF EXISTS LOAN;
 DROP TABLE IF EXISTS BOOKS;
+DROP TABLE IF EXISTS USERS;
 
 
 -- Create tables
@@ -29,6 +30,15 @@ CREATE TABLE LOAN
     FOREIGN KEY (n_book_id) REFERENCES BOOKS (n_book_id) ON DELETE CASCADE
 );
 
+CREATE TABLE USERS
+(
+    n_user_id        SERIAL UNIQUE       NOT NULL,
+    s_user_name      VARCHAR(128) UNIQUE NOT NULL,
+    s_password       VARCHAR(128)        NOT NULL,
+    s_first_name     VARCHAR(128),
+    s_last_name      VARCHAR(128),
+    PRIMARY KEY (n_user_id)
+);
 -- Insert Values into table
 
 INSERT INTO BOOKS(s_isbn, s_title, n_publishing_year, s_book_language,
@@ -42,6 +52,11 @@ INSERT INTO LOAN (ts_now, n_book_id)
 VALUES ('2020-11-28 12:12:12', 1),
        ('2020-12-28 14:23:51', 2),
        ('2021-01-28 08:56:22', 3);
+
+INSERT INTO USERS(s_user_name, s_password, s_first_name, s_last_name)
+VALUES ('benni', '1234', 'Ben', 'Hell'),
+       ('nadia', '1234', 'Nadia', 'Tall'),
+       ('susi', '1234', 'Susanne', 'Nieble');
 
 
 -- Create procedures

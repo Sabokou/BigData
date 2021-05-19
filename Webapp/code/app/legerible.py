@@ -14,6 +14,8 @@ from app.book import Book
 class Legerible:
 
     def __init__(self):
+        self.s_user = None
+        self.s_user = None
 
         self.alchemy_engine = None
         self.alchemy_connection = None
@@ -178,6 +180,12 @@ class Legerible:
     # ###########################################################################################################
     # EXECUTING FUNCTIONS
 
+    def set_user(self, s_username, s_pwd):
+        s_sql = f"SELECT n_user_id FROM users WHERE s_user_name = '{s_username}' AND s_password = '{s_pwd}'"
+        df = self.get_select(s_sql)
+        n_id = int(df['n_user_id'])
+        self.s_user = n_id
+        return self.s_user
 
     def generate_loan(self, book_ids):
         count_loaned_books_beginning = self.get_select("SELECT COUNT(DISTINCT(n_loan_id)) FROM loan").iat[0, 0]
