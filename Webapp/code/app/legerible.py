@@ -24,7 +24,10 @@ class Legerible:
         self.b_connected = False
         self.b_initialised = False
 
+        # establishes connection to database
         self.connect()
+
+        # tests if database has entries
         self.test()
 
     # ###########################################################################################################
@@ -63,7 +66,11 @@ class Legerible:
         # checks if data / tables are present if it fails it initialises the database
         if self.b_connected:
             try:
-                df = pd.read_sql_query('SELECT * FROM books LIMIT 1', self.alchemy_connection)
+                df = pd.read_sql_query("""SELECT true
+                                          FROM books
+                                          LIMIT 1; 
+                                      """,
+                                       self.alchemy_connection)
                 if b_verbose:
                     print(df)
                 return df
@@ -78,7 +85,7 @@ class Legerible:
 
         DELETES ALL EXISTING DATA
 
-        Initializes the db with from the ground up and adds some default data.
+        Initializes the db from the ground up and adds some default data.
 
         :return:
         """
@@ -213,9 +220,3 @@ class Legerible:
 
 if __name__ == "__main__":
     my_class = Legerible()
-    # my_class.init_db()
-    # my_class.get_book_id_by_isbn(9780575097568)
-    # my_class.test(True)
-    # my_class.list_read_books()
-    # my_class.make_loan([1, 2], 14)
-    # my_class.return_book(1)
