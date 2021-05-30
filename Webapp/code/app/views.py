@@ -136,27 +136,8 @@ def search_loans():
 def profile():
     active_user_id = session.get('user_id', None)
     if active_user_id is not None:
-        #count_read_books = bib.get_select(bib.Selections.sql_total_loans_user(active_user_id)).iat[0, 0]
 
-        # user_info = bib.get_select(bib.Selections.sql_basic_user_information(active_user_id))
-        user_info_names = ["First Name", "Last Name", "Date of Birth", "City", "Country of Residency"]
-
-        # select favorite Genre + Publisher + Author
-        #favorites = bib.get_select(
-        #    Selections.sql_most_loaned_books_per_genre_publisher_author_for_user(user_id=active_user_id))
-
-        # combine names of author and drop unnecessary columns
-        favorites["Favorite Author"] = favorites["Favorite Author FN"] + " " + favorites["Favorite Author LN"]
-        favorites.drop(['Favorite Author FN', 'Favorite Author LN', 'count_borrowed_items'], axis=1, inplace=True)
-        favorites.columns = ["Favorite Genre", "Favorite Publisher", "Favorite Author"]
-
-        row_data_fav = list(["None" if x is None else x for x in favorites.values.tolist()[0]])
-        return render_template("profile.html", read_books_count=count_read_books, user_info=user_info,
-                               column_names=user_info_names,
-                               row_data=list(user_info.values.tolist()), zip=zip,
-                               column_names_fav=list(favorites.columns.values),
-                               row_data_fav=row_data_fav, zip2=zip,
-                               user=session.get('user_name', None))
+        return render_template("profile.html")
     else:
         return render_template("fail.html", title='Error',
                                text='You are not logged in!')
