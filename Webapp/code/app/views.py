@@ -64,7 +64,8 @@ def book():
 def loan_book():
     if request.method == 'POST':
         if request.form['do'] == 'Loan':
-            result = leg.make_loan(int(request.form['book_id']))
+            user = session.get('user_id')
+            result = leg.make_loan(int(request.form['book_id']), user)
         if result is True:
             return render_template("success.html", title='Success',
                                    text='Action executed successfully.')
@@ -89,9 +90,10 @@ def generate_loan_book():
 @app.route('/loans', methods=['POST', 'GET'])
 def loans():
     result = leg.get_select("""SELECT L.n_loan_id AS Loan_ID, L.ts_now as Timestamp, B.s_isbn AS ISBN, B.s_title AS Title, 
-                                      B.s_aut_first_name AS Author_first_name, B.s_aut_last_name AS Author_last_name
+                                      B.s_aut_first_name AS Author_first_name, B.s_aut_last_name AS Author_last_name, U.s_user_name AS User
                                FROM Loan AS L
-                                    LEFT JOIN Books AS B ON (L.n_book_id = B.n_book_id)""")
+                                    LEFT JOIN Books AS B ON (L.n_book_id = B.n_book_id)
+                                    LEFT JOIN Users AS U ON (L.n_user_id = U.n_user_id)""")
     return render_template("Loans.html", column_names=result.columns.values,
                                row_data=list(result.values.tolist()),
                                title='Loans', link_column='none',

@@ -205,9 +205,9 @@ class Legerible:
         else:
             return False
 
-    def make_loan(self, book_id):
+    def make_loan(self, book_id, user):
         count_loaned_books_beginning = self.get_select("SELECT COUNT(DISTINCT(n_loan_id)) FROM loan").iat[0, 0]
-        call = f"""CALL new_loan({book_id});"""
+        call = f"""CALL new_loan({book_id}, {user});"""
         self.exec_statement(call)
         count_loaned_books_new = self.get_select("SELECT COUNT(DISTINCT(n_loan_id)) FROM loan").iat[0, 0]
         if count_loaned_books_new>count_loaned_books_beginning:
