@@ -194,10 +194,10 @@ class Legerible:
         self.s_user = n_id
         return self.s_user
 
-    def generate_loan(self, book_ids):
+    def generate_loan(self, book_ids, user):
         count_loaned_books_beginning = self.get_select("SELECT COUNT(DISTINCT(n_loan_id)) FROM loan").iat[0, 0]
         for i in book_ids:
-            call = f"""CALL new_loan({i});"""
+            call = f"""CALL new_loan({i}, {user});"""
             self.exec_statement(call)
         count_loaned_books_new = self.get_select("SELECT COUNT(DISTINCT(n_loan_id)) FROM loan").iat[0, 0]
         if count_loaned_books_new>count_loaned_books_beginning:

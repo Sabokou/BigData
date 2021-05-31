@@ -77,10 +77,11 @@ def generate_loan_book():
         if request.form['do'] == 'Loan 50 Books automatically':
             count_total_books = leg.get_select("SELECT COUNT(DISTINCT(n_book_id)) FROM books").iat[0, 0]
             randomIDs = []
+            user = session.get('user_id')
             for i in range(0,50):
                 x = random.randint(1,count_total_books)
                 randomIDs.append(x)
-            result = leg.generate_loan(randomIDs)
+            result = leg.generate_loan(randomIDs, user)
         if result is True:
             return render_template("success.html", title='Success',
                                    text='Action executed successfully.')
