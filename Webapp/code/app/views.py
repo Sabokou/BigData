@@ -145,8 +145,8 @@ def profile():
                                         FROM Users
                                         WHERE s_user_name LIKE '%{user}%'""")
 
-        result1 = leg.get_select(f"""SELECT L.n_loan_id AS Loan_ID, L.ts_now as Timestamp, B.s_isbn AS ISBN, B.s_title AS Title,
-                                        B.s_aut_first_name AS Author_first_name, B.s_aut_last_name AS Author_last_name, U.s_user_name AS User
+        result1 = leg.get_select(f"""SELECT L.ts_now as Timestamp, B.s_isbn AS ISBN, B.s_title AS Title,
+                                        B.s_aut_first_name AS Author_first_name, B.s_aut_last_name AS Author_last_name
                                     FROM Loan AS L
                                         LEFT JOIN Books AS B ON (L.n_book_id = B.n_book_id)
                                         LEFT JOIN Users AS U ON (L.n_user_id = U.n_user_id)
