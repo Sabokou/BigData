@@ -9,6 +9,12 @@ from app import app
 leg = Legerible()
 app.secret_key = 'dljsawadslqk24e21cjn!Ew@@dsa5'
 
+@app.context_processor
+def logging_in():
+    return dict(is_logged_in=session.get('is_logged_in', None),
+                user=session.get('user_name', None),
+                user_id=session.get('user_id', None))
+
 
 @app.route('/')  # Home
 def index():
@@ -34,11 +40,22 @@ def index():
 
 @app.route('/book')
 def book():
-    result = leg.get_select("""SELECT n_book_id, s_isbn AS ISBN, s_title AS Title, n_publishing_year AS Publishing_year, 
+    active_user_id = session.get('user_id', None)
+    if active_user_id is not None:
+        result = leg.get_select("""SELECT n_book_id, s_isbn AS ISBN, s_title AS Title, n_publishing_year AS Publishing_year, 
                                       s_book_language AS language,s_aut_first_name AS Author_first_name, 
                                       s_aut_last_name AS Author_last_name
                                FROM BOOKS""")
-    return render_template("Books.html", column_names=result.columns.values,
+        return render_template("Books.html", column_names=result.columns.values,
+                               row_data=list(result.values.tolist()),
+                               title='Books', link_column='none',
+                               zip=zip)
+    else:
+        result = leg.get_select("""SELECT s_isbn AS ISBN, s_title AS Title, n_publishing_year AS Publishing_year, 
+                                      s_book_language AS language,s_aut_first_name AS Author_first_name, 
+                                      s_aut_last_name AS Author_last_name
+                               FROM BOOKS""")
+        return render_template("Books.html", column_names=result.columns.values,
                                row_data=list(result.values.tolist()),
                                title='Books', link_column='none',
                                zip=zip)
