@@ -6,8 +6,8 @@ WORKDIR /Webapp
 
 # install requirements
 COPY requirements.txt requirements.txt
-RUN pip install -U pip
-RUN pip install -r requirements.txt
+RUN pip3 install -U pip
+RUN pip3 install -r requirements.txt
 
 # copy folder into working directory
 COPY Webapp/ /Webapp

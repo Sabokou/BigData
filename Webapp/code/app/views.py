@@ -7,7 +7,6 @@ from app.legerible import Legerible
 from app import app
 
 leg = Legerible()
-app.secret_key = 'dljsawadslqk24e21cjn!Ew@@dsa5'
 
 @app.context_processor
 def logging_in():
@@ -133,12 +132,16 @@ def search_loans():
         return render_template("fail.html", title='Error',
                                text='No Loan found.')              
 
-@app.route('/profile')  # Profile
+@app.route('/profile', methods=['POST', 'GET'])  # Profile
 def profile():
     active_user_id = session.get('user_id', None)
     if active_user_id is not None:
-
-        return render_template("profile.html")
+        user = session.get('user_name')
+        result = leg.get_select(f"""SELECT s_first_name, s_last_name,n_user_id
+                                        FROM Users
+                                        WHERE s_user_name LIKE '%{user}%'""")
+        return render_template("profile.html", user=user, column_names=result.columns.values,
+                               row_data=list(result.values.tolist()), link_column='none',zip=zip)
     else:
         return render_template("fail.html", title='Error',
                                text='You are not logged in!')
