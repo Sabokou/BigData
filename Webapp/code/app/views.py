@@ -7,6 +7,7 @@ from app.legerible import Legerible
 from app import app
 
 leg = Legerible()
+app.secret_key = 'dljsawadslqk24e21cjn!Ew@@dsa5'
 
 @app.context_processor
 def logging_in():
