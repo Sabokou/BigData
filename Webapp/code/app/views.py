@@ -144,8 +144,19 @@ def profile():
         result = leg.get_select(f"""SELECT s_first_name, s_last_name,n_user_id
                                         FROM Users
                                         WHERE s_user_name LIKE '%{user}%'""")
+
+        result1 = leg.get_select(f"""SELECT L.n_loan_id AS Loan_ID, L.ts_now as Timestamp, B.s_isbn AS ISBN, B.s_title AS Title,
+                                        B.s_aut_first_name AS Author_first_name, B.s_aut_last_name AS Author_last_name, U.s_user_name AS User
+                                    FROM Loan AS L
+                                        LEFT JOIN Books AS B ON (L.n_book_id = B.n_book_id)
+                                        LEFT JOIN Users AS U ON (L.n_user_id = U.n_user_id)
+                                    WHERE U.s_user_name LIKE '%{user}%'""")
+
         return render_template("profile.html", user=user, column_names=result.columns.values,
-                               row_data=list(result.values.tolist()), link_column='none',zip=zip)
+                               row_data=list(result.values.tolist()), link_column='none',zip=zip,column_names1=result1.columns.values,
+                               row_data1=list(result1.values.tolist()),
+                               link_column1='none',
+                               zip1=zip)
     else:
         return render_template("fail.html", title='Error',
                                text='You are not logged in!')
