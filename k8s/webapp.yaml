@@ -1,34 +1,45 @@
-#Begin: Pod (might be changed to deployment)
-apiVersion: v1
-kind: Pod
+#Begin: Deployment (might be changed to deployment)
+apiVersion: apps/v1
+kind: Deployment
 metadata:
-  labels:
-    service: webapp
   name: webapp
 spec:
-  containers:
-    - image: webapp
-      name: webapp
-      ports:
-        - containerPort: 5000
-  restartPolicy: OnFailure
+  replicas: 1
+  selector:
+    matchLabels:
+      app: webapp-pod
+  template:
+    metadata:
+      labels:
+        app: webapp-pod
+    spec:
+      containers:
+        - name: webapp-container
+          image: webapp
+          imagePullPolicy: Never
+          name: webapp
+          ports:
+            - containerPort: 5000
+              protocol: TCP
+      restartPolicy: Always
 
-# End: Pod
+# End: Deployment
 
 ---
 #Begin: Service
 apiVersion: v1
 kind: Service
 metadata:
-  labels:
-    service: webapp
   name: webapp
 spec:
-  ports:
-    - port: 80
-      targetPort: 5000
   selector:
-    service: webapp
+    app: webapp-pod
+  ports:
+    - port: 5000
+      targetPort: 5000
+      # nodePort: 30010 # access the node directly from the browser. range 30000 to 32767 Only for debugging
+  type: LoadBalancer
+  
 #End: Service
 
 ---
@@ -37,6 +48,8 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: legerible-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
   rules:
     - http:
@@ -46,6 +59,6 @@ spec:
             backend:
               service:
                 name: webapp
-                port:
-                  number: 80
+                port: 
+                  number: 5000
 #End: Ingress
