@@ -43,6 +43,17 @@ CREATE TABLE LOAN
     FOREIGN KEY (n_user_id) REFERENCES USERS (n_user_id) ON DELETE CASCADE
 );
 
+CREATE TABLE RATINGS
+(
+    n_ratings_id SERIAL UNIQUE NOT NULL,
+    n_book_id    INT           NOT NULL,
+    n_user_id    INT           NOT NULL,
+    n_rating     INT           NOT NULL,
+    PRIMARY KEY (n_ratings_id),
+    FOREIGN KEY (n_book_id) REFERENCES BOOKS (n_book_id) ON DELETE CASCADE,
+    FOREIGN KEY (n_user_id) REFERENCES USERS (n_user_id) ON DELETE CASCADE
+);
+
 -- Insert Values into table
 
 INSERT INTO BOOKS(s_isbn, s_title, n_publishing_year, s_book_language,
