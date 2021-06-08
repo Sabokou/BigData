@@ -17,7 +17,6 @@ spec:
         - name: webapp-container
           image: webapp
           imagePullPolicy: Never
-          name: webapp
           ports:
             - containerPort: 5000
               protocol: TCP

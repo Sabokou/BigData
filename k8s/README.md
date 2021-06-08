@@ -48,23 +48,23 @@ skaffold dev
 There are two different ways to access the application. On Linux and MacOS it can be accessed via ingress. On Windows on the other hand it is for some reason not possible to access the ingress, therefore we will access it via LoadBalancer.
 
 ### **5.1. Only Linux and MacOS:**
-Fetch the ingress port to access the application:
+Open a new terminal and fetch the ingress port to access the application:
 
 ```
-kubectl get ingress
+kubectl get ingress/legerible-ingress
 ```
 
 This should give you the IP-Address that you can paste in your webbrowser to access the application.
 
 ### **5.2 Only Windows**
 
-Using minikube to make the loadbalancer accessable from http://localhost:5000:
+Open a new terminal and use **minikube** to make the loadbalancer accessable from http://localhost:5000:
 
 ```
 minikube tunnel
 ```
 
-Using microk8s to make the loadbalancer accessable: Not tested yet.
+Using **microk8s** to make the loadbalancer accessable: Not tested yet.
 
 
 # Tips for trouble shooting
@@ -77,4 +77,8 @@ skaffold delete
 to delete all Kubernetes ressources in this project and rebuild the project with 
 ```
 skaffold dev
+```
+4. Skaffold might throw an error if there is an ingress that also listens to the prefix "/". You can solve this by running:
+```
+kubectl delete ingress/<ingress-name-you-want-to-delete>
 ```
