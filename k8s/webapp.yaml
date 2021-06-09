@@ -1,39 +1,44 @@
-#Begin: Deployment
+#Begin: Deployment (might be changed to deployment)
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: project-bib
-  labels:
-    app: project-bib
+  name: webapp
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: webapp
+      app: webapp-pod
   template:
     metadata:
       labels:
-        app: webapp
+        app: webapp-pod
     spec:
       containers:
-        - name: web-app
-          image: .
+        - name: webapp-container
+          image: webapp
+          imagePullPolicy: Never
           ports:
             - containerPort: 5000
+              protocol: TCP
+      restartPolicy: Always
+
+# End: Deployment
 
 ---
 #Begin: Service
-kind: Service
 apiVersion: v1
+kind: Service
 metadata:
-  name: web-service
+  name: webapp
 spec:
   selector:
-    app: webapp
+    app: webapp-pod
   ports:
-    - protocol: TCP
-      port: 5000
+    - port: 5000
       targetPort: 5000
+      # nodePort: 30010 # access the node directly from the browser. range 30000 to 32767 Only for debugging
+  type: LoadBalancer
+  
 #End: Service
 
 ---
@@ -41,7 +46,7 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: project-bib-ingress
+  name: legerible-ingress
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
@@ -52,6 +57,7 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: project-bib-service
-                port:
-                  number: 3000
+                name: webapp
+                port: 
+                  number: 5000
+#End: Ingress

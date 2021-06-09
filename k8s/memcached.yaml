@@ -2,36 +2,39 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: memcache-deployment
   labels:
-    app: memcache-deployment
+    service: memcached
+  name: memcached-deployment
 spec:
-  # Three memcached instances
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
-      app: my-memcached
+      service: memcached
   template:
     metadata:
       labels:
-        app: my-memcached
+        service: memcached
     spec:
       containers:
-        - name: my-memcached
-          image: memcached:alpine
+        - image: memcached
+          name: memcached
           ports:
             - containerPort: 11211
+      restartPolicy: Always
 #End: Deployment
 
 ---
 #Begin: Service
-kind: Service
 apiVersion: v1
+kind: Service
 metadata:
-  name: my-memcached-service
+  labels:
+    service: memcached
+  name: memcached-service
 spec:
-  # Headless service (i.e., no ip is assigned)
-  clusterIP: None
+  ports:
+    - port: 11211
+      targetPort: 11211
   selector:
-    app: my-memcached
+    service: memcached
 #End: Service
