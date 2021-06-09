@@ -15,11 +15,7 @@ If you use Microk8s:
 microk8s start
 ```
 
-
-## 2. Install skaffold
-You will need to install [Skaffold](https://skaffold.dev/docs/install/) if you don't have it installed already.
-
-## 3. Activate Ingress addon
+## 2. Activate Ingress addon
 
 You need to activate the ingress addon on in Minikube/Microk8s:
 
@@ -35,7 +31,28 @@ If you use **Minikube** use this in your terminal:
 minikube addons enable ingress
 ```
 
-## 4. Start the application
+## 3. Install skaffold
+You will need to install [Skaffold](https://skaffold.dev/docs/install/) if you don't have it installed already.
+
+## 4. Install helm 
+
+Next up you need helm, which functions like a package manager for kubernetes, we will use it to handle some parts of our application (kafka cluster creation).
+
+Install [helm](https://helm.sh/docs/intro/install/) with you favorite package manager (e.g. [chocolatey](https://chocolatey.org/install) on Windows or [brew](https://docs.brew.sh/Installation) on MacOS, Linux distributions usually ship with a package manager)
+
+Now follow the instructions on the [official helm website](https://helm.sh/docs/intro/install/) to install helm with your package manager.
+
+## 5. Add Bitnami repository to helm
+The bitnami repository will be used by helm to create a kafka cluster.
+
+Run this in the terminal:
+
+```
+helm repo add bitnami https://charts.bitnami.com/bitnami
+```
+
+
+## 6. Start the application
 
 In the main directory of this repository run the following command:
 
@@ -43,11 +60,11 @@ In the main directory of this repository run the following command:
 skaffold dev
 ```
 
-## 5. Access the application
+## 7. Access the application
 
 There are two different ways to access the application. On Linux and MacOS it can be accessed via ingress. On Windows on the other hand it is for some reason not possible to access the ingress, therefore we will access it via LoadBalancer.
 
-### **5.1. Only Linux and MacOS:**
+### **7.1. Only Linux and MacOS:**
 Open a new terminal and fetch the ingress port to access the application:
 
 ```
@@ -56,7 +73,7 @@ kubectl get ingress/legerible-ingress
 
 This should give you the IP-Address that you can paste in your webbrowser to access the application.
 
-### **5.2 Only Windows**
+### **7.2 Only Windows**
 
 Open a new terminal and use **minikube** to make the loadbalancer accessable from http://localhost:5000:
 
@@ -82,3 +99,4 @@ skaffold dev
 ```
 kubectl delete ingress/<ingress-name-you-want-to-delete>
 ```
+5. It might be, that the default memory of the minikube kubernetes cluster (about 2GB) is insufficient. If you encounter problems with the ingress addon or the kafka cluster you can manually allocate more memory to minikube. This might help ```minikube stop & minikube start --cpu 2 --memory 4096```

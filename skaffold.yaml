@@ -14,6 +14,17 @@ build:
     #   context: spark-app
 
 deploy:
+  # Helm is used to automate some steps of setting up the cluster ressources
+  # helm CLI is in beta, so manual instructions will be included
+  helm: 
+    releases:
+    - name: kafka-release
+      remoteChart: bitnami/kafka
+      namespace: legerible-kafka
+      createNamespace: true
+      # these steps can be done manually by running this:
+      # helm install kafka-release bitnami/kafka --create-namespace -n legerible-kafka
+      
   kubectl:
     manifests:
       - k8s/*.yaml
