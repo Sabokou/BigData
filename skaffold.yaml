@@ -1,4 +1,4 @@
-apiVersion: skaffold/v2alpha4
+apiVersion: skaffold/v2beta17 # This is the latest version as of now, please keep skaffold up-to-date
 kind: Config
 
 metadata:
@@ -18,13 +18,28 @@ deploy:
   # helm CLI is in beta, so manual instructions will be included
   helm: 
     releases:
-    - name: kafka-release
-      remoteChart: bitnami/kafka
-      namespace: legerible-kafka
-      createNamespace: true
-      # these steps can be done manually by running this:
-      # helm install kafka-release bitnami/kafka --create-namespace -n legerible-kafka
+      - name: kafka-release
+        remoteChart: kafka # will automatically install the latest version of kafka
+        repo: https://charts.bitnami.com/bitnami # official bitnami repository
+        namespace: legerible-kafka
+        createNamespace: true
+    # these steps can be done manually by running this:
+    # > helm repo add bitnami https://charts.bitnami.com/bitnami
+    # > helm install kafka-release bitnami/kafka --create-namespace -n legerible-kafka
+    
+    # Troubleshooting:
+    # 1) 
+    # If you get an error related to the skaffold apiVersion you have to update skaffold 
+    # On Windows if you have choloatey installed: > choco upgrade skaffold <
+    ###
+    # 2)
+    # If skaffold failed to download the chart, you might have an old version of the repository. 
+    # This can occur if you ran > helm repo add bitnami https://charts.bitnami.com/bitnami < a while back
+    # Fix it by running this:
+    # > helm repo update 
+    # This will update all repository references that you have added to helm. 
       
+  # Apply all Kubernetes files that deploy all parts of the app, that are not initilized with helm    
   kubectl:
     manifests:
       - k8s/*.yaml
