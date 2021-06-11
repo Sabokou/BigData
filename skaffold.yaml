@@ -1,4 +1,4 @@
-apiVersion: skaffold/v2alpha4
+apiVersion: skaffold/v2beta17
 kind: Config
 
 metadata:
@@ -14,6 +14,20 @@ build:
     #   context: spark-app
 
 deploy:
+  # use helm to auto-create Spark server, workers, etc
+  # you need to run this once manually before you run skaffold dev:
+  # > helm repo add bitnami https://charts.bitnami.com/bitnami
+  helm: 
+    releases:
+      - name: spark-release
+        remoteChart: bitnami/spark # will automatically install the latest version of spark
+        # repo cannot be referenced in this way for some reason
+        # repo: https://charts.bitnami.com/bitnami # official bitnami repository
+        namespace: legerible-spark
+        createNamespace: true
+        # To setup spark ressources manually run this (assuming you have helm and it is up-to-date):
+        # > helm install --repo https://charts.bitnami.com/bitnami spark-release spark -n legerible-spark --create-namespace
+
   kubectl:
     manifests:
       - k8s/*.yaml
