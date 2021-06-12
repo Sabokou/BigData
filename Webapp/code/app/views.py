@@ -5,6 +5,7 @@ import random
 
 from app.legerible import Legerible
 from app import app
+from app.recommendation import recommandation
 
 leg = Legerible()
 app.secret_key = 'dljsawadslqk24e21cjn!Ew@@dsa5'
@@ -163,12 +164,14 @@ def profile():
                                         LEFT JOIN Books AS B ON (L.n_book_id = B.n_book_id)
                                         LEFT JOIN Users AS U ON (L.n_user_id = U.n_user_id)
                                     WHERE U.s_user_name LIKE '%{user}%'""")
+        
+        result3 = recommandation(result1)
 
         return render_template("profile.html", user=user, column_names=result.columns.values,
                                row_data=list(result.values.tolist()), link_column='none',zip=zip,column_names1=result1.columns.values,
                                row_data1=list(result1.values.tolist()),
                                link_column1='none',
-                               zip1=zip)
+                               zip1=zip, result3=result3)
     else:
         return render_template("fail.html", title='Error',
                                text='You are not logged in!')
