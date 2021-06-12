@@ -51,10 +51,17 @@
                 </tr>
                 {% endfor %}
             </table>
+        <br/>
+        <h4>Top recommendations for you!</h4>
         </div>
-        {% for i in result3 %}
-        <p>{{ i }}</p>
-        {% endfor %}
+        {% if i == [] %}
+            <p>no recommendations at the moment...</p>
+        {% else %}
+            {% for i in result3 %}
+            <p>{{ i }}</p>
+            {% endfor %}
+        {% endif %}
+        
     </div>
     <br>
 </div>
