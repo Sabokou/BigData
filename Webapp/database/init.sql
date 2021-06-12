@@ -2,9 +2,12 @@
 -- Missing: SELECT; INSERT; 
 
 -- Drop all old
-DROP TABLE IF EXISTS LOAN;
-DROP TABLE IF EXISTS BOOKS;
-DROP TABLE IF EXISTS USERS;
+
+-- Dirty fix of issue #11 on github
+
+-- DROP TABLE IF EXISTS LOAN;
+-- DROP TABLE IF EXISTS BOOKS;
+-- DROP TABLE IF EXISTS USERS;
 
 
 -- Create tables
@@ -39,6 +42,17 @@ CREATE TABLE LOAN
     n_book_id         INT           NOT NULL,
     n_user_id         INT           NOT NULL,
     PRIMARY KEY (n_loan_id),
+    FOREIGN KEY (n_book_id) REFERENCES BOOKS (n_book_id) ON DELETE CASCADE,
+    FOREIGN KEY (n_user_id) REFERENCES USERS (n_user_id) ON DELETE CASCADE
+);
+
+CREATE TABLE RATINGS
+(
+    n_ratings_id SERIAL UNIQUE NOT NULL,
+    n_book_id    INT           NOT NULL,
+    n_user_id    INT           NOT NULL,
+    n_rating     INT           NOT NULL,
+    PRIMARY KEY (n_ratings_id),
     FOREIGN KEY (n_book_id) REFERENCES BOOKS (n_book_id) ON DELETE CASCADE,
     FOREIGN KEY (n_user_id) REFERENCES USERS (n_user_id) ON DELETE CASCADE
 );

@@ -127,3 +127,10 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Ignore Visual Studio Code config 
+.vscode/
+
+# ignore testing folder for k8s related stuff
+k8s-tests/
+

@@ -6,11 +6,12 @@ metadata:
 
 build:
   artifacts:
-    - image: k8s/popular-slides
-      context: web-app
+    # create an docker image named webapp from the Dockerfile in the "." directory
+    - image: webapp
+      context: .
 
-    - image: k8s/popular-slides-spark
-      context: spark-app
+    # - image: k8s/popular-slides-spark
+    #   context: spark-app
 
 deploy:
   kubectl:
