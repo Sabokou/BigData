@@ -66,6 +66,15 @@ minikube tunnel
 
 Using **microk8s** to make the loadbalancer accessable: Not tested yet.
 
+# Structure of the Kubernetes cluster
+The Kubernetes (a.k.a. k8s) cluster is structured in the following way. Consider, that corresponding services and pods are definied in a deployment.
+
+<img src="..\Dokumentation\assets\Kubernetes-structure.jpg" >
+
+Connections that are indicated by a double arrow, are realized useing kafka-producer and kafka-consumer, within the kafka cluster, without needing to connect directly to each other.
+
+
+
 
 # Tips for trouble shooting
 1. Make sure that docker can be used on the command line. If not start the docker daemon
