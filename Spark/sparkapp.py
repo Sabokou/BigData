@@ -1,12 +1,43 @@
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import *
 import numpy as np
 import pandas as pd
 import collections
 import copy
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.feature_extraction.text import CountVectorizer
-from app.legerible import Legerible
-
+from  Webapp.code.app.legerible import Legerible
 leg = Legerible()
+
+if __name__ == "__main__":
+
+    loans = leg.get_select("""SELECT L.n_loan_id AS Loan_ID, L.ts_now as Timestamp, B.s_isbn AS ISBN, B.s_title AS Title, 
+                                      B.s_aut_first_name AS Author_first_name, B.s_aut_last_name AS Author_last_name, U.s_user_name AS User
+                                   FROM Loan AS L
+                                          LEFT JOIN Books AS B ON (L.n_book_id = B.n_book_id)
+                                          LEFT JOIN Users AS U ON (L.n_user_id = U.n_user_id)""")
+
+
+    sc = SparkSession.builder.appName("spark-app").master("local[*]").getOrCreate()
+
+    lines = sc.read.csv("isbn.txt")
+    lines.show()
+
+    def count_books(self):
+        return (self.distinct().count())
+    
+    top_x = loans.groupby("books_id").count()
+    count_b = count_books(lines)
+    count_l = count_books(loans)
+
+    def return_bla():
+        a = []
+        a.append(count_b)
+        a.append(count_l)
+        a.append(top_x)
+        return a 
+    
+    leg = Legerible()
 
 def recommandation(user_loans):
        #getting books and loaned books from db
@@ -101,3 +132,5 @@ def recommandation(user_loans):
        final_recommendation = sorted(book_count, key=book_count.get, reverse=True)[:4]
        
        return final_recommendation
+
+    
