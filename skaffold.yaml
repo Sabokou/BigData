@@ -10,8 +10,8 @@ build:
     - image: webapp
       context: .
 
-    # - image: k8s/popular-slides-spark
-    #   context: spark-app
+    - image: spark-starter
+      context: Spark/
 
 deploy:
   # use helm to auto-create Spark server, workers, etc

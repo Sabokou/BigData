@@ -49,3 +49,18 @@ Here is a list of further readings for this toppic:
 - [Running Spark on Kubernetes](https://spark.apache.org/docs/latest/running-on-kubernetes.html#submitting-applications-to-kubernetes)
 - [Overview what happens behind the scenes](https://www.datamechanics.co/blog-post/setting-up-managing-monitoring-spark-on-kubernetes)
 - [Running Spark Jobs](https://databricks.com/de/session_na20/running-apache-spark-jobs-using-kubernetes)
+
+
+# Structure 
+<ol>
+<li> py-apps folder:</li>
+
+Contains a python file named "spark-app.py" that contains the logic for a spark job. The naming is important, because a container will look wor this specific file.
+
+<li> requirements.txt: </li>
+
+Contains the dependencies, that are needed to run the "spark-app.py" spark job.
+
+<li> Dockerfile </li>
+
+Packages the dependencies and starts the spark job with the "spark-submit" script that comes with spark.

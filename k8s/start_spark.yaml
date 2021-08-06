@@ -1,0 +1,42 @@
+#Begin: Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spark-starter-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: spark-starter-pod
+  template:
+    metadata:
+      labels:
+        app: spark-starter-pod
+    spec:
+      containers:
+        - name: spark-starter-container
+          image: spark-starter # This name is defined in skaffold.yaml
+          imagePullPolicy: Never # It is a local image, so its not pulled
+          # ports:
+          #   - containerPort: 5000
+          #     protocol: TCP
+      restartPolicy: Always
+
+# End: Deployment
+
+# ---
+# #Begin: Service
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: spark-starter-service
+# spec:
+#   selector:
+#     app: spark-starter-pod
+#   ports:
+#     - port: 5000
+#       targetPort: 5000
+#       # nodePort: 30010 # access the node directly from the browser. range 30000 to 32767 Only for debugging
+#   type: LoadBalancer
+  
+# #End: Service

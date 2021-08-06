@@ -82,3 +82,6 @@ skaffold dev
 ```
 kubectl delete ingress/<ingress-name-you-want-to-delete>
 ```
+
+## Connecting kafka with the Spark cluster 
+https://spark.apache.org/docs/latest/structured-streaming-kafka-integration.html
