@@ -31,3 +31,13 @@ deploy:
   kubectl:
     manifests:
       - k8s/*.yaml
+
+portForward:
+  # forward the spark master node GUI
+  # You can access it on localhost:7077
+  # You can see the spark worker nodes and the running application there
+  - resourceType: Service
+    resourceName: spark-release-master-svc
+    namespace: legerible-spark
+    port: 80
+    localPort: 7077

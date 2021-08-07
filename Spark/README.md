@@ -17,8 +17,31 @@ You add the bitnami repository to helm with this command:
 ```
 helm repo add bitnami https://charts.bitnami.com/bitnami
 ```
+## 3. Start the application 
 
-## 3. Start the application
+As described in the [Kubernetes README](../k8s/README.md) use the command ```skaffold dev``` to start all containers in Kubernetes. Skaffold will deploy a spark cluster and a container that starts the spark app at [./py-apps/spark-app.py](./py-apps/spark-app.py). The container downloads and packages all necessary dependencies for the application, that are definined in [requirements.txt](requirements.txt). 
+
+Lastly if the spark job is started skaffold will also make a web GUI available to see the running jobs at http://localhost:7077.
+
+
+# Structure 
+<ol>
+<li> py-apps folder:</li>
+
+Contains a python file named "spark-app.py" that contains the logic for a spark job. The naming is important, because a container will look wor this specific file.
+
+<li> requirements.txt: </li>
+
+Contains the dependencies, that are needed to run the "spark-app.py" spark job.
+
+<li> Dockerfile </li>
+
+Packages the dependencies and starts the spark job with the "spark-submit" script that comes with spark.
+</ol>
+
+
+# Troubleshooting notes
+## Start a spark application manually
 Now you can start the application for reference [here](../k8s/README.md) is the instruction how to start the application on Kubernetes with minikube.
 
 Important to note is that on startup, after the spark ressources are created instructions are printed on how to submit a demo application.
@@ -51,16 +74,3 @@ Here is a list of further readings for this toppic:
 - [Running Spark Jobs](https://databricks.com/de/session_na20/running-apache-spark-jobs-using-kubernetes)
 
 
-# Structure 
-<ol>
-<li> py-apps folder:</li>
-
-Contains a python file named "spark-app.py" that contains the logic for a spark job. The naming is important, because a container will look wor this specific file.
-
-<li> requirements.txt: </li>
-
-Contains the dependencies, that are needed to run the "spark-app.py" spark job.
-
-<li> Dockerfile </li>
-
-Packages the dependencies and starts the spark job with the "spark-submit" script that comes with spark.

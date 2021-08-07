@@ -24,19 +24,20 @@ spec:
 
 # End: Deployment
 
-# ---
-# #Begin: Service
-# apiVersion: v1
-# kind: Service
-# metadata:
-#   name: spark-starter-service
-# spec:
-#   selector:
-#     app: spark-starter-pod
-#   ports:
-#     - port: 5000
-#       targetPort: 5000
-#       # nodePort: 30010 # access the node directly from the browser. range 30000 to 32767 Only for debugging
-#   type: LoadBalancer
-  
-# #End: Service
+---
+# Begin: Service
+
+# Service to connect to the spark master 
+# spark master is located in the legerible-spark namespace
+kind: Service
+apiVersion: v1
+metadata:
+  name: spark-master
+  namespace: default
+spec:
+  type: ExternalName # points to other namespace
+  externalName: spark-release-master-svc.legerible-spark.svc.cluster.local
+  ports:
+  - port: 7077
+    targetPort: 7077
+# End: Service

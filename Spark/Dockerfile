@@ -1,5 +1,5 @@
 # Using spark container so spark-submit can be executed
-FROM bitnami/spark:3.0.0
+FROM bitnami/spark
 
 USER root
 
@@ -21,15 +21,15 @@ WORKDIR /jump-start-spark/dependencies
 # go back to main folder
 WORKDIR /jump-start-spark
 
-# Install the python dependencies into the dependencies folder 
+# Install the python dependencies into the dependencies folder
 COPY requirements.txt .
 RUN pip install --no-cache-dir -t /jump-start-spark/dependencies -r requirements.txt
 # package the dependencies in a zip
 RUN zip -r /jump-start-spark/dependencies.zip /jump-start-spark/dependencies
 
-# Submit the spark applications if the spark cluster is available 
+# Submit the spark applications if the spark cluster is available
 ENTRYPOINT spark-submit --verbose \
-	--master spark://spark-release-master-svc:7077 \
+	--master spark://spark-master:7077 \
 	--class org.apache.spark.examples.SparkPi\
 	--name py-app \
 	--conf "spark.jars.ivy=/tmp/.ivy"\
@@ -37,14 +37,9 @@ ENTRYPOINT spark-submit --verbose \
 	/jump-start-spark/py-apps/spark-app.py
 
 RUN echo "Spark-submit was executed"
-	# spark-submit --verbose \
-	# --master local \
-	# --conf "spark.jars.ivy=${IVY_PACKAGE_DIR}" \
-	# --packages "${SPARK_KAFKA_DEPENDENCY}" \
-	# --py-files /app/dependencies.zip \
-	# /app/spark-app.py
-
-
+	
+# example code from lecture:
+# could be usefull to establish a connection with kafka
 
 # FROM bitnami/spark:3.0.0
 # LABEL maintainer="Dennis Pfisterer, http://dennis-pfisterer.de"
@@ -64,7 +59,7 @@ RUN echo "Spark-submit was executed"
 
 # USER root
 
-# # Workaround for "failure to login" error message: 
+# # Workaround for "failure to login" error message:
 # # cf. https://stackoverflow.com/questions/41864985/hadoop-ioexception-failure-to-login/56083736
 # RUN groupadd --gid 1001 spark
 # RUN useradd --uid 1001 --gid spark --shell /bin/bash spark
