@@ -6,8 +6,6 @@ WORKDIR /workdir
 
 # copy folder into working directory
 COPY src/ /workdir
-# we can use the Book class to get additional information about the books that are generated
-#COPY ../../webapp/code/app/book.py /workdir/
 
 RUN pip3 install -U pip
 RUN pip3 install -r requirements.txt

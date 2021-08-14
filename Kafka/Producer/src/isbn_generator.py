@@ -13,10 +13,16 @@ class ISBN_generator():
 
     def random_isbn(self):
         word = self.random_word()
-        isbn = isbnlib.isbn_from_words(word)
-        success = (isbn != "")
-        # Return the isbn if it isn't empty otherwise recurse to get a valid isbn
-        if success:
-            return isbn
+
+        # Use the word if it is not empty otherwise recurse
+        if word != "" and word is not None:
+            isbn = isbnlib.isbn_from_words(word)
+            
+            # Return the isbn if it isn't empty otherwise recurse to get a valid isbn
+            if isbn != "" and isbn is not None:
+                return isbn
+            else:
+                return self.random_isbn()
+        
         else:
-            return self.isbn_from_random_word()
+            return self.random_isbn()

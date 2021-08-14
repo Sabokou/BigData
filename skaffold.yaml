@@ -12,6 +12,12 @@ build:
 
     - image: spark-starter
       context: Spark/
+    
+    - image: kafka-consumer
+      context: Kafka/Consumer/
+
+    - image: kafka-producer
+      context: Kafka/Producer/
 
 deploy:
   # Helm is used to automate some steps of setting up the cluster ressources

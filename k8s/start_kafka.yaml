@@ -1,5 +1,52 @@
+---
 # producer and consumer pods might be added here
 
+#Begin: Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kafka-consumer-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kafka-consumer-pod
+  template:
+    metadata:
+      labels:
+        app: kafka-consumer-pod
+    spec:
+      containers:
+        - name: kafka-consumer-container
+          image: kafka-consumer # This container is build in skaffold.yaml
+          imagePullPolicy: Never # It is a local image, so its not pulled
+          # ports:
+      restartPolicy: Always
+# End: Deployment
+
+---
+#Begin: Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kafka-producer-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kafka-producer-pod
+  template:
+    metadata:
+      labels:
+        app: kafka-producer-pod
+    spec:
+      containers:
+        - name: kafka-producer-container
+          image: kafka-producer # This container is build in skaffold.yaml
+          imagePullPolicy: Never # It is a local image, so its not pulled
+          # ports:
+      restartPolicy: Always
+# End: Deployment
 
 ---
 # Begin: Service
