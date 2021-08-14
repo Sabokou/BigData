@@ -97,6 +97,15 @@ Using **microk8s** to make the loadbalancer accessable: Not tested yet.
 
 </br>
 </br>
+# Structure of the Kubernetes cluster
+The Kubernetes (a.k.a. k8s) cluster is structured in the following way. Consider, that corresponding services and pods are definied in a deployment.
+
+<img src="..\Dokumentation\assets\Kubernetes-structure.jpg" >
+
+Connections that are indicated by a double arrow, are realized useing kafka-producer and kafka-consumer, within the kafka cluster, without needing to connect directly to each other.
+
+
+
 
 # Tips for trouble shooting
 1. Make sure that docker can be used on the command line. If not start the docker daemon
@@ -122,3 +131,6 @@ kubectl delete ingress/<ingress-name-you-want-to-delete>
    This can occur if you added a repository like so ``` helm repo add bitnami https://charts.bitnami.com/bitnami ``` a while back. Fix it by running this:
    ```helm repo update ```
    This will update all repository references that you have added to helm. 
+
+## Connecting kafka with the Spark cluster 
+https://spark.apache.org/docs/latest/structured-streaming-kafka-integration.html

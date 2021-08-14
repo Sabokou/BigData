@@ -1,4 +1,4 @@
-apiVersion: skaffold/v2beta17 # This is the latest version as of now, please keep skaffold up-to-date
+apiVersion: skaffold/v2beta17
 kind: Config
 
 metadata:
@@ -10,8 +10,8 @@ build:
     - image: webapp
       context: .
 
-    # - image: k8s/popular-slides-spark
-    #   context: spark-app
+    - image: spark-starter
+      context: Spark/
 
 deploy:
   # Helm is used to automate some steps of setting up the cluster ressources
@@ -40,6 +40,32 @@ deploy:
     # This will update all repository references that you have added to helm. 
       
   # Apply all Kubernetes files that deploy all parts of the app, that are not initilized with helm    
+  # use helm to auto-create Spark server, workers, etc
+  # you need to run this once manually before you run skaffold dev:
+  # > helm repo add bitnami https://charts.bitnami.com/bitnami
+  helm: 
+    releases:
+      - name: spark-release
+        remoteChart: bitnami/spark # will automatically install the latest version of spark
+        # repo cannot be referenced in this way for some reason
+        # repo: https://charts.bitnami.com/bitnami # official bitnami repository
+        namespace: legerible-spark
+        createNamespace: true
+        # To setup spark ressources manually run this (assuming you have helm and it is up-to-date):
+        # > helm install --repo https://charts.bitnami.com/bitnami spark-release spark -n legerible-spark --create-namespace
+        # pulls the newest helm chart before building
+        upgradeOnChange: true
+        
   kubectl:
     manifests:
       - k8s/*.yaml
+
+portForward:
+  # forward the spark master node GUI
+  # You can access it on localhost:7077
+  # You can see the spark worker nodes and the running application there
+  - resourceType: Service
+    resourceName: spark-release-master-svc
+    namespace: legerible-spark
+    port: 80
+    localPort: 7077
