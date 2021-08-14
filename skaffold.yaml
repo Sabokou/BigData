@@ -19,10 +19,12 @@ deploy:
   helm: 
     releases:
       - name: kafka-release
-        remoteChart: kafka # will automatically install the latest version of kafka
-        repo: https://charts.bitnami.com/bitnami # official bitnami repository
+        remoteChart: bitnami/kafka # will automatically install the latest version of kafka
+        # repo cannot be referenced in this way for some reason
+        # repo: https://charts.bitnami.com/bitnami # official bitnami repository
         namespace: legerible-kafka
         createNamespace: true
+        upgradeOnChange: true
     # these steps can be done manually by running this:
     # > helm repo add bitnami https://charts.bitnami.com/bitnami
     # > helm install kafka-release bitnami/kafka --create-namespace -n legerible-kafka
@@ -43,8 +45,6 @@ deploy:
   # use helm to auto-create Spark server, workers, etc
   # you need to run this once manually before you run skaffold dev:
   # > helm repo add bitnami https://charts.bitnami.com/bitnami
-  helm: 
-    releases:
       - name: spark-release
         remoteChart: bitnami/spark # will automatically install the latest version of spark
         # repo cannot be referenced in this way for some reason

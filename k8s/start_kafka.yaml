@@ -1,0 +1,40 @@
+# producer and consumer pods might be added here
+
+
+---
+# Begin: Service
+
+# Service to connect to the kafka broker
+# The function of the broker is to receive and process messages from producers
+# the kafka broker is located in the legerible-kafka namespace
+kind: Service
+apiVersion: v1
+metadata:
+  name: kafka-broker
+  namespace: default
+spec:
+  type: ExternalName # points to other namespace
+  externalName: kafka-release-0.kafka-release-headless.legerible-kafka.svc.cluster.local
+  ports:
+  - port: 9092
+    targetPort: 9092
+# End: Service
+
+---
+# Begin: Service
+
+# Service to connect to the kafka client (bootstrap server)
+# The function of it is to provide data access to the consumers
+# the kafka client is located in the legerible-kafka namespace
+kind: Service
+apiVersion: v1
+metadata:
+  name: kafka-client
+  namespace: default
+spec:
+  type: ExternalName # points to other namespace
+  externalName: kafka-release.legerible-kafka.svc.cluster.local
+  ports:
+  - port: 9092
+    targetPort: 9092
+# End: Service
