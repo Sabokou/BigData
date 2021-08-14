@@ -27,7 +27,9 @@ deploy:
         createNamespace: true
         # To setup spark ressources manually run this (assuming you have helm and it is up-to-date):
         # > helm install --repo https://charts.bitnami.com/bitnami spark-release spark -n legerible-spark --create-namespace
-
+        # pulls the newest helm chart before building
+        upgradeOnChange: true
+        
   kubectl:
     manifests:
       - k8s/*.yaml
