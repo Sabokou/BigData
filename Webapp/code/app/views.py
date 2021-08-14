@@ -5,7 +5,7 @@ import random
 
 from app.legerible import Legerible
 from app import app
-from app.recommendation import recommandation
+#from app.recommendation import recommandation
 
 leg = Legerible()
 app.secret_key = 'dljsawadslqk24e21cjn!Ew@@dsa5'
