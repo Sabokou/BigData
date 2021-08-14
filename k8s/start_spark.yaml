@@ -1,0 +1,43 @@
+#Begin: Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spark-starter-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: spark-starter-pod
+  template:
+    metadata:
+      labels:
+        app: spark-starter-pod
+    spec:
+      containers:
+        - name: spark-starter-container
+          image: spark-starter # This name is defined in skaffold.yaml
+          imagePullPolicy: Never # It is a local image, so its not pulled
+          # ports:
+          #   - containerPort: 5000
+          #     protocol: TCP
+      restartPolicy: Always
+
+# End: Deployment
+
+---
+# Begin: Service
+
+# Service to connect to the spark master 
+# spark master is located in the legerible-spark namespace
+kind: Service
+apiVersion: v1
+metadata:
+  name: spark-master
+  namespace: default
+spec:
+  type: ExternalName # points to other namespace
+  externalName: spark-release-master-svc.legerible-spark.svc.cluster.local
+  ports:
+  - port: 7077
+    targetPort: 7077
+# End: Service
