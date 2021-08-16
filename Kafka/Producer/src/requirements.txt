@@ -1,0 +1,5 @@
+Random-Word
+# required for Random-Word
+PyYAML
+isbnlib
+kafka-python

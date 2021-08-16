@@ -1,7 +1,7 @@
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import *
 from pyspark.sql.types import IntegerType, StringType, StructType, TimestampType
-import mysqlx
+#import mysqlx
 
 dbOptions = {"host": "my-app-mysql-service", 'port': 33060, "user": "root", "password": "mysecretpw"}
 dbSchema = 'popular'
@@ -106,3 +106,4 @@ dbInsertStream = popular.writeStream \
 
 # Wait for termination
 spark.streams.awaitAnyTermination()
+print("...working")

@@ -2,9 +2,12 @@
 -- Missing: SELECT; INSERT; 
 
 -- Drop all old
-DROP TABLE IF EXISTS LOAN;
-DROP TABLE IF EXISTS BOOKS;
-DROP TABLE IF EXISTS USERS;
+
+-- Dirty fix of issue #11 on github
+
+-- DROP TABLE IF EXISTS LOAN;
+-- DROP TABLE IF EXISTS BOOKS;
+-- DROP TABLE IF EXISTS USERS;
 
 
 -- Create tables
@@ -21,14 +24,6 @@ CREATE TABLE BOOKS
 );
 
 
-CREATE TABLE LOAN
-(
-    n_loan_id         SERIAL UNIQUE NOT NULL,
-    ts_now            TIMESTAMP     NOT NULL DEFAULT current_timestamp,
-    n_book_id         INT           NOT NULL,
-    PRIMARY KEY (n_loan_id),
-    FOREIGN KEY (n_book_id) REFERENCES BOOKS (n_book_id) ON DELETE CASCADE
-);
 
 CREATE TABLE USERS
 (
@@ -39,6 +34,29 @@ CREATE TABLE USERS
     s_last_name      VARCHAR(128),
     PRIMARY KEY (n_user_id)
 );
+
+CREATE TABLE LOAN
+(
+    n_loan_id         SERIAL UNIQUE NOT NULL,
+    ts_now            TIMESTAMP     NOT NULL DEFAULT current_timestamp,
+    n_book_id         INT           NOT NULL,
+    n_user_id         INT           NOT NULL,
+    PRIMARY KEY (n_loan_id),
+    FOREIGN KEY (n_book_id) REFERENCES BOOKS (n_book_id) ON DELETE CASCADE,
+    FOREIGN KEY (n_user_id) REFERENCES USERS (n_user_id) ON DELETE CASCADE
+);
+
+CREATE TABLE RATINGS
+(
+    n_ratings_id SERIAL UNIQUE NOT NULL,
+    n_book_id    INT           NOT NULL,
+    n_user_id    INT           NOT NULL,
+    n_rating     INT           NOT NULL,
+    PRIMARY KEY (n_ratings_id),
+    FOREIGN KEY (n_book_id) REFERENCES BOOKS (n_book_id) ON DELETE CASCADE,
+    FOREIGN KEY (n_user_id) REFERENCES USERS (n_user_id) ON DELETE CASCADE
+);
+
 -- Insert Values into table
 
 INSERT INTO BOOKS(s_isbn, s_title, n_publishing_year, s_book_language,
@@ -48,16 +66,15 @@ VALUES ('9780575097568', 'Rivers of London', 2010, 'en', 'Ben', 'Aaronovitch'),
        ('9780525516019', 'A Land of Permanent Goodbyes',  NULL, 'en', 'Atia', 'Abawi'),  
        (NULL, 'Der Text des Lebens', NULL, 'de', 'Susanne', 'Abel'); 
 
-INSERT INTO LOAN (ts_now, n_book_id)
-VALUES ('2020-11-28 12:12:12', 1),
-       ('2020-12-28 14:23:51', 2),
-       ('2021-01-28 08:56:22', 3);
-
 INSERT INTO USERS(s_user_name, s_password, s_first_name, s_last_name)
 VALUES ('benni', '1234', 'Ben', 'Hell'),
        ('nadia', '1234', 'Nadia', 'Tall'),
        ('susi', '1234', 'Susanne', 'Nieble');
 
+INSERT INTO LOAN (ts_now, n_book_id, n_user_id)
+VALUES ('2020-11-28 12:12:12', 1, 1),
+       ('2020-12-28 14:23:51', 2, 2),
+       ('2021-01-28 08:56:22', 3, 3);
 
 -- Create procedures
 create or replace procedure add_book(
@@ -90,7 +107,8 @@ $$
 ;
 
 create or replace procedure new_loan(
-    book_id INT
+    book_id INT,
+    user_id INT
 )
     language plpgsql
 AS
@@ -99,8 +117,8 @@ DECLARE
     loan_id INT;
 BEGIN
 
-    INSERT INTO LOAN (ts_now, n_book_id)
-    VALUES (now(), book_id)
+    INSERT INTO LOAN (ts_now, n_book_id, n_user_id)
+    VALUES (now(), book_id, user_id)
     RETURNING n_loan_id INTO loan_id;
 
 END;

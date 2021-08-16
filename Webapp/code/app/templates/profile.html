@@ -5,6 +5,64 @@
 {% block heading %}Profile{% endblock %}
 {% block body %}
 
-<div>Profile</div>
-
+<h3>Welcome back {{user}}!</h3>
+<div>
+    <br>
+    <div align="left">
+        <span data-feather="award"></span>
+        <h4>Personal Information</h4>
+        <div class="table-responsive">
+            <table class="table table-striped table-sm">
+                <tr>
+                    <th scope="col">First Name</th>
+                    <th scope="col">Last Name</th>
+                    <th scope="col">Customer ID</th>
+                </tr>
+                {% for row in row_data %}
+                <tr>
+                    {% for col, row_ in zip(column_names, row) %}
+                    <td>{{row_}}</td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </table>
+        </div> 
+    <br>
+</div>
+<div>
+    <br>
+    <div align="left">
+        <span data-feather="award"></span>
+        <h4>Your Loans</h3>
+        <div class="table-responsive">
+            <table class="table table-striped table-sm">
+                <tr>
+                    <th scope="col">Timestamp</th>
+                    <th scope="col">ISBN</th>
+                    <th scope="col">Title</th>
+                    <th scope="col">Author first name</th>
+                    <th scope="col">Author last name</th>
+                </tr>
+                {% for row1 in row_data1%}
+                <tr>
+                    {% for col1, row_1 in zip1(column_names1, row1) %}
+                    <td>{{row_1}}</td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </table>
+        <br/>
+        <h4>Top recommendations for you!</h4>
+        </div>
+        {% if i == [] %}
+            <p>no recommendations at the moment...</p>
+        {% else %}
+            {% for i in result3 %}
+            <p>{{ i }}</p>
+            {% endfor %}
+        {% endif %}
+        
+    </div>
+    <br>
+</div>
 {% endblock %}

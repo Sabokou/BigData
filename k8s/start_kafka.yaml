@@ -1,0 +1,87 @@
+---
+# producer and consumer pods might be added here
+
+#Begin: Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kafka-consumer-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kafka-consumer-pod
+  template:
+    metadata:
+      labels:
+        app: kafka-consumer-pod
+    spec:
+      containers:
+        - name: kafka-consumer-container
+          image: kafka-consumer # This container is build in skaffold.yaml
+          imagePullPolicy: Never # It is a local image, so its not pulled
+          # ports:
+      restartPolicy: Always
+# End: Deployment
+
+---
+#Begin: Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kafka-producer-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kafka-producer-pod
+  template:
+    metadata:
+      labels:
+        app: kafka-producer-pod
+    spec:
+      containers:
+        - name: kafka-producer-container
+          image: kafka-producer # This container is build in skaffold.yaml
+          imagePullPolicy: Never # It is a local image, so its not pulled
+          # ports:
+      restartPolicy: Always
+# End: Deployment
+
+---
+# Begin: Service
+
+# Service to connect to the kafka broker
+# The function of the broker is to receive and process messages from producers
+# the kafka broker is located in the legerible-kafka namespace
+kind: Service
+apiVersion: v1
+metadata:
+  name: kafka-broker
+  namespace: default
+spec:
+  type: ExternalName # points to other namespace
+  externalName: kafka-release-0.kafka-release-headless.legerible-kafka.svc.cluster.local
+  ports:
+  - port: 9092
+    targetPort: 9092
+# End: Service
+
+---
+# Begin: Service
+
+# Service to connect to the kafka client (bootstrap server)
+# The function of it is to provide data access to the consumers
+# the kafka client is located in the legerible-kafka namespace
+kind: Service
+apiVersion: v1
+metadata:
+  name: kafka-client
+  namespace: default
+spec:
+  type: ExternalName # points to other namespace
+  externalName: kafka-release.legerible-kafka.svc.cluster.local
+  ports:
+  - port: 9092
+    targetPort: 9092
+# End: Service

@@ -1,4 +1,4 @@
-apiVersion: skaffold/v2alpha4
+apiVersion: skaffold/v2beta17
 kind: Config
 
 metadata:
@@ -6,13 +6,72 @@ metadata:
 
 build:
   artifacts:
-    - image: k8s/popular-slides
-      context: web-app
+    # create an docker image named webapp from the Dockerfile in the "." directory
+    - image: webapp
+      context: .
 
-    - image: k8s/popular-slides-spark
-      context: spark-app
+    - image: spark-starter
+      context: Spark/
+    
+    - image: kafka-consumer
+      context: Kafka/Consumer/
+
+    - image: kafka-producer
+      context: Kafka/Producer/
 
 deploy:
+  # Helm is used to automate some steps of setting up the cluster ressources
+  # helm CLI is in beta, so manual instructions will be included
+  helm: 
+    releases:
+      - name: kafka-release
+        remoteChart: bitnami/kafka # will automatically install the latest version of kafka
+        # repo cannot be referenced in this way for some reason
+        # repo: https://charts.bitnami.com/bitnami # official bitnami repository
+        namespace: legerible-kafka
+        createNamespace: true
+        upgradeOnChange: true
+    # these steps can be done manually by running this:
+    # > helm repo add bitnami https://charts.bitnami.com/bitnami
+    # > helm install kafka-release bitnami/kafka --create-namespace -n legerible-kafka
+    
+    # Troubleshooting:
+    # 1) 
+    # If you get an error related to the skaffold apiVersion you have to update skaffold 
+    # On Windows if you have choloatey installed: > choco upgrade skaffold <
+    ###
+    # 2)
+    # If skaffold failed to download the chart, you might have an old version of the repository. 
+    # This can occur if you ran > helm repo add bitnami https://charts.bitnami.com/bitnami < a while back
+    # Fix it by running this:
+    # > helm repo update 
+    # This will update all repository references that you have added to helm. 
+      
+  # Apply all Kubernetes files that deploy all parts of the app, that are not initilized with helm    
+  # use helm to auto-create Spark server, workers, etc
+  # you need to run this once manually before you run skaffold dev:
+  # > helm repo add bitnami https://charts.bitnami.com/bitnami
+      - name: spark-release
+        remoteChart: bitnami/spark # will automatically install the latest version of spark
+        # repo cannot be referenced in this way for some reason
+        # repo: https://charts.bitnami.com/bitnami # official bitnami repository
+        namespace: legerible-spark
+        createNamespace: true
+        # To setup spark ressources manually run this (assuming you have helm and it is up-to-date):
+        # > helm install --repo https://charts.bitnami.com/bitnami spark-release spark -n legerible-spark --create-namespace
+        # pulls the newest helm chart before building
+        upgradeOnChange: true
+        
   kubectl:
     manifests:
       - k8s/*.yaml
+
+portForward:
+  # forward the spark master node GUI
+  # You can access it on localhost:7077
+  # You can see the spark worker nodes and the running application there
+  - resourceType: Service
+    resourceName: spark-release-master-svc
+    namespace: legerible-spark
+    port: 80
+    localPort: 7077

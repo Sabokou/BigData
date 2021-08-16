@@ -5,9 +5,17 @@ import random
 
 from app.legerible import Legerible
 from app import app
+#from app.recommendation import recommandation
 
 leg = Legerible()
 app.secret_key = 'dljsawadslqk24e21cjn!Ew@@dsa5'
+
+
+@app.context_processor
+def logging_in():
+    return dict(is_logged_in=session.get('is_logged_in', None),
+                user=session.get('user_name', None),
+                user_id=session.get('user_id', None))
 
 
 @app.route('/')  # Home
@@ -28,26 +36,39 @@ def index():
                                 WHERE r.TOP_Loans <=10""")
 
     return render_template("/index.html", amount_book_total=count_total_books,
-                            amount_books_loaned=count_loaned_books, column_names=result.columns.values,
-                               row_data=list(result.values.tolist()), link_column='none',zip=zip)
+                           amount_books_loaned=count_loaned_books, column_names=result.columns.values,
+                           row_data=list(result.values.tolist()), link_column='none', zip=zip)
 
 
 @app.route('/book')
 def book():
-    result = leg.get_select("""SELECT n_book_id, s_isbn AS ISBN, s_title AS Title, n_publishing_year AS Publishing_year, 
+    active_user_id = session.get('user_id', None)
+    if active_user_id is not None:
+        result = leg.get_select("""SELECT n_book_id, s_isbn AS ISBN, s_title AS Title, n_publishing_year AS Publishing_year, 
                                       s_book_language AS language,s_aut_first_name AS Author_first_name, 
                                       s_aut_last_name AS Author_last_name
                                FROM BOOKS""")
-    return render_template("Books.html", column_names=result.columns.values,
+        return render_template("Books.html", column_names=result.columns.values,
                                row_data=list(result.values.tolist()),
                                title='Books', link_column='none',
                                zip=zip)
+    else:
+        result = leg.get_select("""SELECT s_isbn AS ISBN, s_title AS Title, n_publishing_year AS Publishing_year, 
+                                      s_book_language AS language,s_aut_first_name AS Author_first_name, 
+                                      s_aut_last_name AS Author_last_name
+                               FROM BOOKS""")
+        return render_template("Books.html", column_names=result.columns.values,
+                               row_data=list(result.values.tolist()),
+                               title='Books', link_column='none',
+                               zip=zip)
+
 
 @app.route('/loan_book', methods=['POST', 'GET'])
 def loan_book():
     if request.method == 'POST':
         if request.form['do'] == 'Loan':
-            result = leg.make_loan(int(request.form['book_id']))
+            user = session.get('user_id')
+            result = leg.make_loan(int(request.form['book_id']), user)
         if result is True:
             return render_template("success.html", title='Success',
                                    text='Action executed successfully.')
@@ -59,27 +80,39 @@ def generate_loan_book():
         if request.form['do'] == 'Loan 50 Books automatically':
             count_total_books = leg.get_select("SELECT COUNT(DISTINCT(n_book_id)) FROM books").iat[0, 0]
             randomIDs = []
-            for i in range(0,50):
-                x = random.randint(1,count_total_books)
+            userIDs = []
+            for i in range(0, 50):
+                x = random.randint(1, count_total_books)
                 randomIDs.append(x)
-            result = leg.generate_loan(randomIDs)
+            active_user_id = session.get('user_id', None)
+
+            if active_user_id is not None:
+                user = session.get('user_id')
+                for i in range(0, 50):
+                    userIDs.append(user)
+            else:
+                count_total_users = leg.get_select("SELECT COUNT(DISTINCT(n_user_id)) FROM users").iat[0, 0]
+                for i in range(0, 50):
+                    x = random.randint(1, count_total_users)
+                    userIDs.append(x)
+
+            result = leg.generate_loan(randomIDs, userIDs)
         if result is True:
             return render_template("success.html", title='Success',
                                    text='Action executed successfully.')
 
 
-
 @app.route('/loans', methods=['POST', 'GET'])
 def loans():
     result = leg.get_select("""SELECT L.n_loan_id AS Loan_ID, L.ts_now as Timestamp, B.s_isbn AS ISBN, B.s_title AS Title, 
-                                      B.s_aut_first_name AS Author_first_name, B.s_aut_last_name AS Author_last_name
+                                      B.s_aut_first_name AS Author_first_name, B.s_aut_last_name AS Author_last_name, U.s_user_name AS User
                                FROM Loan AS L
-                                    LEFT JOIN Books AS B ON (L.n_book_id = B.n_book_id)""")
+                                    LEFT JOIN Books AS B ON (L.n_book_id = B.n_book_id)
+                                    LEFT JOIN Users AS U ON (L.n_user_id = U.n_user_id)""")
     return render_template("Loans.html", column_names=result.columns.values,
-                               row_data=list(result.values.tolist()),
-                               title='Loans', link_column='none',
-                               zip=zip)
-
+                           row_data=list(result.values.tolist()),
+                           title='Loans', link_column='none',
+                           zip=zip)
 
 
 @app.route('/search_books', methods=['POST', 'GET'])
@@ -99,6 +132,7 @@ def search_books():
         return render_template("fail.html", title='Error',
                                text='No book found.')
 
+
 @app.route('/search_loans', methods=['POST', 'GET'])
 def search_loans():
     text = request.form['search_text']
@@ -114,33 +148,61 @@ def search_loans():
                                zip=zip)
     else:
         return render_template("fail.html", title='Error',
-                               text='No Loan found.')              
+                               text='No Loan found.')
 
-@app.route('/profile')  # Profile
+
+@app.route('/profile', methods=['POST', 'GET'])  # Profile
 def profile():
     active_user_id = session.get('user_id', None)
     if active_user_id is not None:
+        user = session.get('user_name')
+        result = leg.get_select(f"""SELECT s_first_name, s_last_name,n_user_id
+                                        FROM Users
+                                        WHERE s_user_name LIKE '%{user}%'""")
 
-        return render_template("profile.html")
+        result1 = leg.get_select(f"""SELECT L.ts_now as Timestamp, B.s_isbn AS ISBN, B.s_title AS Title,
+                                        B.s_aut_first_name AS Author_first_name, B.s_aut_last_name AS Author_last_name
+                                    FROM Loan AS L
+                                        LEFT JOIN Books AS B ON (L.n_book_id = B.n_book_id)
+                                        LEFT JOIN Users AS U ON (L.n_user_id = U.n_user_id)
+                                    WHERE U.s_user_name LIKE '%{user}%'""")
+        
+        result3 = recommandation(result1)
+
+        return render_template("profile.html", user=user, column_names=result.columns.values,
+                               row_data=list(result.values.tolist()), link_column='none', zip=zip,
+                               column_names1=result1.columns.values,
+                               row_data1=list(result1.values.tolist()),
+                               link_column1='none',
+                               zip1=zip, result3=result3)
     else:
         return render_template("fail.html", title='Error',
                                text='You are not logged in!')
+
 
 @app.route('/login', methods=['POST', 'GET'])
 def login():
     return render_template("login.html")
 
+
 @app.route('/logged_in', methods=['POST', 'GET'])
 def logged_in():
-    session['user_id'] = leg.set_user(request.form['user_name'], request.form['password'])
-    if session.get('user_id') is False:
+    user_id = leg.set_user(request.form['user_name'], request.form['password'])
+
+    if user_id is False:
+        session['user_id'] = user_id
+        session['is_logged_in'] = 'logged_out'
+        session['user_id'] = None
         return render_template("fail.html", title='Failed Log-In',
                                text='You have not been logged in.')
-    session['is_logged_in'] = 'logged_in'
-    session['user_name'] = request.form['user_name']
-    print(session.get('user_id', None))
-    return render_template("success.html", title='Successful Login',
-                           text='You have been successfully logged in.')
+
+    else:
+        session['user_id'] = user_id
+        session['is_logged_in'] = 'logged_in'
+        session['user_name'] = request.form['user_name']
+        print(session.get('user_id', None))
+        return render_template("success.html", title='Successful Login',
+                               text='You have been successfully logged in.')
 
 
 @app.route('/logout', methods=['POST', 'GET'])
