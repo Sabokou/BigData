@@ -46,13 +46,11 @@ CREATE TABLE LOAN
     FOREIGN KEY (n_user_id) REFERENCES USERS (n_user_id) ON DELETE CASCADE
 );
 
-CREATE TABLE RATINGS
+CREATE TABLE RECOMMENDATIONS
 (
-    n_ratings_id SERIAL UNIQUE NOT NULL,
     n_book_id    INT           NOT NULL,
     n_user_id    INT           NOT NULL,
-    n_rating     INT           NOT NULL,
-    PRIMARY KEY (n_ratings_id),
+    PRIMARY KEY (n_book_id, n_user_id),
     FOREIGN KEY (n_book_id) REFERENCES BOOKS (n_book_id) ON DELETE CASCADE,
     FOREIGN KEY (n_user_id) REFERENCES USERS (n_user_id) ON DELETE CASCADE
 );
