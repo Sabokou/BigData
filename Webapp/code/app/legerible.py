@@ -206,7 +206,7 @@ class Legerible:
             self.exec_statement(call)
 
             # Generate Payload for Kafka Messaging - Dictionary with user_id and loaned book
-            payload = {"user_id": user_id, "isbn": book_id}
+            payload = {"user_id": user_id, "book_id": book_id}
 
             # Send Payload via default producer
             kafka_producer.producer.send('book_stream_topic', value=payload).\

@@ -78,7 +78,7 @@ def loan_book():
             result = leg.make_loan(int(request.form['book_id']), user)
         if result is True:
             # Generate Payload for Kafka Messaging - Dictionary with user_id and loaned book
-            payload = {"user_id": user, "isbn": request.form['book_id']}
+            payload = {"user_id": user, "book_id": request.form['book_id']}
 
             # Send Payload via default producer
             kafka_producer.producer.send('book_stream_topic', value=payload). \
