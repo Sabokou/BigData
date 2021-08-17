@@ -7,9 +7,10 @@ This student project is part of our ...
 ---
 
 1. [Use-Case](#Use-Case)
-2. [Architecture](#Architecture)
+2. [Architecture and Design](#Architecture-an-Design)
 3. [Folder Structure](#Folder-Structure)
 4. [Setup Instructions](#Setup-Instructions)
+5. [Screencast Demonstration](#Screencast-Demonstration)
 
 ---
 
@@ -18,7 +19,7 @@ This student project is part of our ...
 ...
 
 
-## Architecture
+## Architecture and Design
 
 ...
 
@@ -27,7 +28,13 @@ This student project is part of our ...
 ...
 
 ## Setup Instructions
+
 ...
+
+## Screencast Demonstaration
+
+...
+
 
 
 👉 To start the application head on over to [k8s/README.md](k8s/README.md).
