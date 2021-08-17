@@ -5,9 +5,12 @@ import random
 
 from app.legerible import Legerible
 from app import app
-#from app.recommendation import recommandation
+from app.kafka_messaging import Producer
+
+# from app.recommendation import recommandation
 
 leg = Legerible()
+kafka_producer = Producer()
 app.secret_key = 'dljsawadslqk24e21cjn!Ew@@dsa5'
 
 
@@ -24,14 +27,17 @@ def index():
     count_loaned_books = leg.get_select("SELECT COUNT(DISTINCT(n_loan_id)) FROM loan").iat[0, 0]
 
     result = leg.get_select(""" SELECT *
-                                FROM(SELECT ROW_NUMBER() OVER (ORDER BY rp.Number_of_Loans DESC) AS TOP_Loans, rp.Book_ID, rp.ISBN, rp.Title, rp.Author_first_name, 
-                                            rp.Author_last_name, rp.Number_of_Loans
+                                FROM(SELECT ROW_NUMBER() OVER (ORDER BY rp.Number_of_Loans DESC) AS TOP_Loans, 
+                                                                rp.Book_ID, rp.ISBN, rp.Title, rp.Author_first_name, 
+                                                                rp.Author_last_name, rp.Number_of_Loans
                                     FROM(SELECT l.n_book_id AS Book_ID, b.s_isbn AS ISBN, b.s_title AS Title, 
-                                                b.s_aut_first_name AS Author_first_name, b.s_aut_last_name AS Author_last_name,
+                                                b.s_aut_first_name AS Author_first_name, 
+                                                b.s_aut_last_name AS Author_last_name,
                                                 COUNT(l.n_book_id) AS Number_of_Loans
                                         FROM Loan AS L
                                             LEFT JOIN Books AS B ON L.n_book_id = B.n_book_id
-                                        GROUP BY  l.n_book_id, b.s_isbn, b.s_title, b.s_aut_first_name, b.s_aut_last_name) AS rp
+                                        GROUP BY  l.n_book_id, b.s_isbn, b.s_title, 
+                                                    b.s_aut_first_name, b.s_aut_last_name) AS rp
                                     ORDER BY rp.Number_of_Loans DESC) as r
                                 WHERE r.TOP_Loans <=10""")
 
@@ -44,7 +50,8 @@ def index():
 def book():
     active_user_id = session.get('user_id', None)
     if active_user_id is not None:
-        result = leg.get_select("""SELECT n_book_id, s_isbn AS ISBN, s_title AS Title, n_publishing_year AS Publishing_year, 
+        result = leg.get_select("""SELECT n_book_id, s_isbn AS ISBN, s_title AS Title, 
+                                          n_publishing_year AS Publishing_year, 
                                       s_book_language AS language,s_aut_first_name AS Author_first_name, 
                                       s_aut_last_name AS Author_last_name
                                FROM BOOKS""")
@@ -70,6 +77,13 @@ def loan_book():
             user = session.get('user_id')
             result = leg.make_loan(int(request.form['book_id']), user)
         if result is True:
+            # Generate Payload for Kafka Messaging - Dictionary with user_id and loaned book
+            payload = {"user_id": user, "isbn": request.form['book_id']}
+
+            # Send Payload via default producer
+            kafka_producer.producer.send('book_stream_topic', value=payload). \
+                add_callback(kafka_producer.on_success). \
+                add_errback(kafka_producer.on_error)
             return render_template("success.html", title='Success',
                                    text='Action executed successfully.')
 
@@ -96,7 +110,7 @@ def generate_loan_book():
                     x = random.randint(1, count_total_users)
                     userIDs.append(x)
 
-            result = leg.generate_loan(randomIDs, userIDs)
+            result = leg.generate_loan(randomIDs, userIDs, kafka_producer)
         if result is True:
             return render_template("success.html", title='Success',
                                    text='Action executed successfully.')
@@ -104,8 +118,10 @@ def generate_loan_book():
 
 @app.route('/loans', methods=['POST', 'GET'])
 def loans():
-    result = leg.get_select("""SELECT L.n_loan_id AS Loan_ID, L.ts_now as Timestamp, B.s_isbn AS ISBN, B.s_title AS Title, 
-                                      B.s_aut_first_name AS Author_first_name, B.s_aut_last_name AS Author_last_name, U.s_user_name AS User
+    result = leg.get_select("""SELECT L.n_loan_id AS Loan_ID, L.ts_now as Timestamp, 
+                                      B.s_isbn AS ISBN, B.s_title AS Title, 
+                                      B.s_aut_first_name AS Author_first_name, B.s_aut_last_name AS Author_last_name, 
+                                      U.s_user_name AS User
                                FROM Loan AS L
                                     LEFT JOIN Books AS B ON (L.n_book_id = B.n_book_id)
                                     LEFT JOIN Users AS U ON (L.n_user_id = U.n_user_id)""")
@@ -118,7 +134,8 @@ def loans():
 @app.route('/search_books', methods=['POST', 'GET'])
 def search_books():
     text = request.form['search_text']
-    result = leg.get_select(f"""SELECT n_book_id, s_isbn AS ISBN, s_title AS Title, n_publishing_year AS Publishing_year, 
+    result = leg.get_select(f"""SELECT n_book_id, s_isbn AS ISBN, s_title AS Title, 
+                                      n_publishing_year AS Publishing_year, 
                                       s_book_language AS language, s_aut_first_name AS Author_first_name, 
                                       s_aut_last_name AS Author_last_name 
                                 FROM Books 
@@ -136,8 +153,9 @@ def search_books():
 @app.route('/search_loans', methods=['POST', 'GET'])
 def search_loans():
     text = request.form['search_text']
-    result = leg.get_select(f"""SELECT L.n_loan_id AS Loan_ID, L.ts_now as Timestamp, B.s_isbn AS ISBN, B.s_title AS Title, 
-                                      B.s_aut_first_name AS Author_first_name, B.s_aut_last_name AS Author_last_name
+    result = leg.get_select(f"""SELECT L.n_loan_id AS Loan_ID, L.ts_now as Timestamp, B.s_isbn AS ISBN, 
+                                       B.s_title AS Title, 
+                                       B.s_aut_first_name AS Author_first_name, B.s_aut_last_name AS Author_last_name
                                 FROM Loan AS L
                                     LEFT JOIN Books AS B ON (L.n_book_id = B.n_book_id)
                                 WHERE s_title LIKE '%{text}%'""")
@@ -166,8 +184,8 @@ def profile():
                                         LEFT JOIN Books AS B ON (L.n_book_id = B.n_book_id)
                                         LEFT JOIN Users AS U ON (L.n_user_id = U.n_user_id)
                                     WHERE U.s_user_name LIKE '%{user}%'""")
-        
-        result3 = recommandation(result1)
+
+        result3 = ""  # recommandation(result1)
 
         return render_template("profile.html", user=user, column_names=result.columns.values,
                                row_data=list(result.values.tolist()), link_column='none', zip=zip,

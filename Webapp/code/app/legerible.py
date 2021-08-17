@@ -199,11 +199,20 @@ class Legerible:
             return False
         return self.s_user
 
-    def generate_loan(self, book_ids, userIDs):
+    def generate_loan(self, book_ids, user_ids, kafka_producer):
         count_loaned_books_beginning = self.get_select("SELECT COUNT(DISTINCT(n_loan_id)) FROM loan").iat[0, 0]
-        for i, j in zip(book_ids, userIDs):
-            call = f"""CALL new_loan({i}, {j});"""
+        for book_id, user_id in zip(book_ids, user_ids):
+            call = f"""CALL new_loan({book_id}, {user_id});"""
             self.exec_statement(call)
+
+            # Generate Payload for Kafka Messaging - Dictionary with user_id and loaned book
+            payload = {"user_id": user_id, "isbn": book_id}
+
+            # Send Payload via default producer
+            kafka_producer.producer.send('book_stream_topic', value=payload).\
+                add_callback(kafka_producer.on_success).\
+                add_errback(kafka_producer.on_error)
+
         count_loaned_books_new = self.get_select("SELECT COUNT(DISTINCT(n_loan_id)) FROM loan").iat[0, 0]
         if count_loaned_books_new > count_loaned_books_beginning:
             return True
