@@ -63,13 +63,13 @@ I suggest we use two different topics:
 <ol>
 <li><b>loan-book-topic</b></li>
 This topic will contain all data streams that are related to new loans that users make.
-The streamed data is in json format and the json has two key value pairs: user_id (int) and isbn (int)
+The streamed data is in json format and the json has two key value pairs: user_id (int) and book_id (int)
 
 Some json example:
 
 {\
     "user_id": 1,\
-    "isbn": 0123456789\
+    "book_id": 5\
 }
 
 <li><b>book-stream-topic</b></li>
@@ -77,7 +77,7 @@ This topic will contain all data streams that are related to new books that are 
 
 The streamed data is again in json format and will only contain the isbn of the book. Key value pairs: isbn (int)
 
-Json exmple:
+Json example:
 
 {\
 "isbn": 0123456789\
