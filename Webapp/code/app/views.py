@@ -1,11 +1,16 @@
 from flask import render_template, request, session
+from flask_caching import *
+
 from pandas import DataFrame
 import psycopg2
 import random
 
-from app.legerible import Legerible
 from app import app
+from app import cache
+
+from app.legerible import Legerible
 from app.kafka_messaging import Producer
+
 
 # from app.recommendation import recommandation
 
@@ -22,6 +27,7 @@ def logging_in():
 
 
 @app.route('/')  # Home
+@cache.cached(timeout=500)
 def index():
     count_total_books = leg.get_select("SELECT COUNT(DISTINCT(n_book_id)) FROM books").iat[0, 0]
     count_loaned_books = leg.get_select("SELECT COUNT(DISTINCT(n_loan_id)) FROM loan").iat[0, 0]
@@ -47,6 +53,7 @@ def index():
 
 
 @app.route('/book')
+@cache.cached(timeout=500)
 def book():
     active_user_id = session.get('user_id', None)
     if active_user_id is not None:
@@ -117,6 +124,7 @@ def generate_loan_book():
 
 
 @app.route('/loans', methods=['POST', 'GET'])
+@cache.cached(timeout=20)
 def loans():
     result = leg.get_select("""SELECT L.n_loan_id AS Loan_ID, L.ts_now as Timestamp, 
                                       B.s_isbn AS ISBN, B.s_title AS Title, 
@@ -170,6 +178,7 @@ def search_loans():
 
 
 @app.route('/profile', methods=['POST', 'GET'])  # Profile
+@cache.cached(timeout=300)
 def profile():
     active_user_id = session.get('user_id', None)
     if active_user_id is not None:
