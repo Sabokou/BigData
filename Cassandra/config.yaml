@@ -1,0 +1,13 @@
+# This file holds configuration information for the deployment 
+# of the cassandra distributed database.
+# It is created via a helm chart and references the 
+# ConfigMap that is definied in k8s/start_cassandra
+
+dbUser:
+  user: legerible
+  forcePassword: true
+  password: "ChangeMeFast"
+
+initDBConfigMap: init-cassandra
+
+replicaCount: 2
