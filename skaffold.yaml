@@ -82,6 +82,9 @@ deploy:
   kubectl:
     manifests:
       - k8s/*.yaml
+    flags:
+      apply:
+        - "--wait"
 
 portForward:
   # forward the spark master node GUI
