@@ -9,6 +9,7 @@ import time
 from multiprocessing.dummy import Pool as ThreadPool
 
 from app.book import Book
+from app import cache
 
 
 class Legerible:
@@ -147,6 +148,7 @@ class Legerible:
     # ###########################################################################################################
     # USING FUNCTIONS
 
+    @cache.memoize(timeout=500)
     def get_select(self, s_sql_statement: str) -> object:
         """
         This Function needs a Select-Statements and returns the result in a df.
@@ -209,8 +211,8 @@ class Legerible:
             payload = {"user_id": user_id, "book_id": book_id}
 
             # Send Payload via default producer
-            kafka_producer.producer.send('book_stream_topic', value=payload).\
-                add_callback(kafka_producer.on_success).\
+            kafka_producer.producer.send('book_stream_topic', value=payload). \
+                add_callback(kafka_producer.on_success). \
                 add_errback(kafka_producer.on_error)
 
         count_loaned_books_new = self.get_select("SELECT COUNT(DISTINCT(n_loan_id)) FROM loan").iat[0, 0]

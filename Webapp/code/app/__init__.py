@@ -5,7 +5,7 @@ from flask_caching import Cache
 
 # Initialize the app
 app = Flask(__name__, instance_relative_config=True)
-cache = Cache(app, config={'CACHE_TYPE': 'MemcachedCache', 'CACHE_MEMCACHED_SERVERS': ':6379/0'})
+cache = Cache(app, config={'CACHE_TYPE': 'MemcachedCache', 'CACHE_MEMCACHED_SERVERS': 'memcached:11211'})
 
 # Load the config file
 app.config.from_object('config')

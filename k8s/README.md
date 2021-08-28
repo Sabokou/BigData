@@ -3,6 +3,8 @@
 ## 1. Install Kubernetes
 You need [Minikube](https://kubernetes.io/de/docs/tasks/tools/install-minikube/) **or** [Microk8s](https://microk8s.io/docs) to host a kubernetes cluster on your local machine.
 
+> NOTE: Use only either one of Minikube or Microk8s
+
 Before doing the following steps start the kubernetes cluster by running:
 
 If you use Minikube:
