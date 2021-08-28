@@ -1,1 +1,4 @@
-mysql-connector-python
+kafka-python
+findspark
+pyspark
+kafka-utils

@@ -28,12 +28,13 @@ RUN pip install --no-cache-dir -t /jump-start-spark/dependencies -r requirements
 RUN zip -r /jump-start-spark/dependencies.zip /jump-start-spark/dependencies
 
 # Submit the spark applications if the spark cluster is available
-ENTRYPOINT spark-submit --verbose \
+ENTRYPOINT spark-submit  \
 	--master spark://spark-master:7077 \
 	--class org.apache.spark.examples.SparkPi\
 	--name py-app \
 	--conf "spark.jars.ivy=/tmp/.ivy"\
 	--py-files dependencies.zip\
+	--packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.1.2 \
 	/jump-start-spark/py-apps/spark-app.py
 
 RUN echo "Spark-submit was executed"

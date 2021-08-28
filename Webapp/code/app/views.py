@@ -4,6 +4,7 @@ from flask_caching import *
 from pandas import DataFrame
 import psycopg2
 import random
+import time
 
 from app import app
 from app import cache
@@ -27,7 +28,7 @@ def logging_in():
 
 
 @app.route('/')  # Home
-@cache.cached(timeout=500)
+# @cache.cached(timeout=500)
 def index():
     count_total_books = leg.get_select("SELECT COUNT(DISTINCT(n_book_id)) FROM books").iat[0, 0]
     count_loaned_books = leg.get_select("SELECT COUNT(DISTINCT(n_loan_id)) FROM loan").iat[0, 0]
@@ -53,7 +54,7 @@ def index():
 
 
 @app.route('/book')
-@cache.cached(timeout=500)
+# @cache.cached(timeout=500)
 def book():
     active_user_id = session.get('user_id', None)
     if active_user_id is not None:
@@ -85,7 +86,8 @@ def loan_book():
             result = leg.make_loan(int(request.form['book_id']), user)
         if result is True:
             # Generate Payload for Kafka Messaging - Dictionary with user_id and loaned book
-            payload = {"user_id": user, "book_id": request.form['book_id']}
+            payload = {"user_id": user, "book_id": request.form['book_id'],
+                       "timestamp": int(time.time())}
 
             # Send Payload via default producer
             kafka_producer.producer.send('book_stream_topic', value=payload). \
@@ -205,7 +207,6 @@ def profile():
     else:
         return render_template("fail.html", title='Error',
                                text='You are not logged in!')
-
 
 @app.route('/login', methods=['POST', 'GET'])
 def login():
