@@ -1,4 +1,2 @@
 kafka-python
-findspark
-pyspark
-kafka-utils
+# pyspark

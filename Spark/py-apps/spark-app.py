@@ -48,46 +48,57 @@ kafkaMessages = spark \
     .load()
     # .option("startingOffsets", "earliest") \
     
-kafkaMessages.head()
+
+print("kafkaMessages", kafkaMessages)
+
+# kafkaMessages.head()
 # Define schema of tracking data
 trackingMessageSchema = StructType() \
     .add("user_id", IntegerType()) \
-    .add("book_id", IntegerType()).add("timestamp", IntegerType())
+    .add("book_id", IntegerType()) \
+    .add("timestamp", IntegerType())
 
 
 
 # Example Part 3
 # Convert value: binary -> JSON -> fields + parsed timestamp
 
-trackingMessages = kafkaMessages.select(
+trackingMessages = kafkaMessages.selectExpr("CAST(key AS STRING)", "CAST(value AS STRING)")
+    
+
+tracking_messages_df = trackingMessages.select(
     # Extract 'value' from Kafka message (i.e., the tracking data)
     from_json(
-        column("value").cast("string"),
+        trackingMessages.value,
         trackingMessageSchema
     ).alias("json")
-).select(
+)
+print("tracking_messages_df", tracking_messages_df)
+
+messages_df = tracking_messages_df.select(
     # Convert Unix timestamp to TimestampType
-    from_unixtime(column('json.timestamp'))
+    from_unixtime(col('json.timestamp'))
     .cast(TimestampType())
     .alias("parsed_timestamp"),
 
     # Select all JSON fields
-    column("json.*")
+    col("json.*")
 ) \
     .withColumnRenamed('json.book_id', 'book_id') \
     .withColumnRenamed('json.user_id', 'user_id') \
     .withWatermark("parsed_timestamp", windowDuration)
 
+print("messages_df", messages_df)
 
 # Example Part 4
 # Compute most popular slides
-popular = trackingMessages.groupBy(
+popular = messages_df.groupBy(
     window(
-        column("parsed_timestamp"),
+        col("parsed_timestamp"),
         windowDuration,
         slidingDuration
     ),
-    column("book_id")
+    col("book_id")
 ).count().withColumnRenamed('count', 'views')
 
 # Example Part 5
