@@ -4,133 +4,149 @@ import numpy as np
 import pandas as pd
 import collections
 import copy
+
+from pyspark.sql.types import DoubleType
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.feature_extraction.text import CountVectorizer
-from  Webapp.code.app.legerible import Legerible
+from Webapp.code.app.legerible import Legerible
+from pyspark import SparkConf
+from pyspark import SparkContext
+import pyspark
+
 leg = Legerible()
 
 if __name__ == "__main__":
-
     loans = leg.get_select("""SELECT L.n_loan_id AS Loan_ID, L.ts_now as Timestamp, B.s_isbn AS ISBN, B.s_title AS Title, 
                                       B.s_aut_first_name AS Author_first_name, B.s_aut_last_name AS Author_last_name, U.s_user_name AS User
                                    FROM Loan AS L
                                           LEFT JOIN Books AS B ON (L.n_book_id = B.n_book_id)
                                           LEFT JOIN Users AS U ON (L.n_user_id = U.n_user_id)""")
 
-
     sc = SparkSession.builder.appName("spark-app").master("local[*]").getOrCreate()
+    sparkContext = sc.sparkContext
 
     lines = sc.read.csv("isbn.txt")
     lines.show()
 
+
     def count_books(self):
-        return (self.distinct().count())
-    
+        return self.distinct().count()
+
+
     top_x = loans.groupby("books_id").count()
     count_b = count_books(lines)
     count_l = count_books(loans)
+
 
     def return_bla():
         a = []
         a.append(count_b)
         a.append(count_l)
         a.append(top_x)
-        return a 
-    
+        return a
+
+
     leg = Legerible()
 
-def recommandation(user_loans):
-       #getting books and loaned books from db
-       books = leg.get_select("""SELECT n_book_id, s_isbn AS ISBN, s_title AS Title, n_publishing_year AS Publishing_year, 
+
+def recommendation(user_loans):
+    # getting books and loaned books from db
+    books = leg.get_select("""SELECT n_book_id, s_isbn AS ISBN, s_title AS Title, n_publishing_year AS Publishing_year, 
                                       s_book_language AS language,s_aut_first_name AS Author_first_name, 
                                       s_aut_last_name AS Author_last_name
                                    FROM BOOKS""")
 
-       loans = leg.get_select("""SELECT L.n_loan_id AS Loan_ID, L.ts_now as Timestamp, B.s_isbn AS ISBN, B.s_title AS Title, 
-                                      B.s_aut_first_name AS Author_first_name, B.s_aut_last_name AS Author_last_name, U.s_user_name AS User
-                                   FROM Loan AS L
-                                          LEFT JOIN Books AS B ON (L.n_book_id = B.n_book_id)
-                                          LEFT JOIN Users AS U ON (L.n_user_id = U.n_user_id)""")
+    # converting variables to strings
+    loans_list = loans.select('isbn').collect()
+    books_loans = books
+    books_loans = books_loans.withColumn("loaned", books_loans("isbn").isin(loans_list))
 
-       #convertring variables to strings
-       loans["isbn"] = loans["isbn"].astype(str)
-       loans_list = loans['isbn'].tolist()
-       books_loans = books
-       books_loans["isbn"] = books_loans["isbn"].astype(str)
-       books_loans["title"] = books_loans["title"].astype(str)
-       books_loans["language"] = books_loans["language"].astype(str)
-       books_loans["author_first_name"] = books_loans["author_first_name"].astype(str)
-       books_loans["author_last_name"] = books_loans["author_last_name"].astype(str)
-       books_loans["isbn"] = books_loans["isbn"].astype(str)
-       books_loans['loaned'] = books_loans['isbn'].isin(loans_list)
-       books_loans["loaned"] = books_loans["loaned"].astype(str)
-       books_loans["books_id"] = books_loans.index
-       user_loans["title"] = user_loans["title"].astype(str)
+    # function to get all important attributes
+    df = books_loans.withColumn("important_features", concat_ws(",", "isbn", 'title', 'language', 'loaned'))
+    df.show()
 
-       #function to get all important attributes
-       def get_important_features(data):
-              important_features= []
-              for i in range(0, data.shape[0]):
-                     important_features.append(data["isbn"][i]+' '+data["title"][i]+' '+data["language"][i]+' '+data["loaned"][i])  
-    
-              return important_features
+    states1 = df.select("book_id", "important_features").rdd.flatMap(lambda x: x).collect()
+    print(states1)
 
-       books_loans["important_features"] = get_important_features(books_loans)
-       
-       #pitting model for cosinus simularity score calculation 
-       cm = CountVectorizer().fit_transform(books_loans["important_features"])
-       cs = cosine_similarity(cm)
+    # Bringing the important_features into the RDD Form
+    rdd = sparkContext.parallelize(
+        [[0, '9780575097568, Rivers of London,en'], [1, '9780345524591, Moon Over Soho,None'],
+         [2, '9780525516019, A Land of Permanent Goodbyes,en'], [3, 'None,Der Text des Lebens,de'],
+         [4, '9783453273351, Später,un'], [5, '9783492070904, Das Geheimnis von Zimmer 622 - Roman,un'],
+         [6, '9783257071481, Hard Land,un'], [7, '9783785727416, Der neunte Arm des Oktopus - Thriller,un'],
+         [8, '9783455011784, The Hill We Climb: Ein Gedicht zur Inauguration,un'],
+         [9, '9783423282789, Vom Aufstehen - Ein Leben in Geschichten,un'],
+         [10, '9783423282734, Junge Frau, am Fenster stehend, Abendlicht, blaues Kleid - Roman,un'],
+         [11, '9783630876672, Über Menschen - Roman,un'], [12, '9783426282564, Die Mitternachtsbibliothek - Roman,un'],
+         [13, '9783446269156, Sprich mit mir - Roman,un'], [14, '9783866124776, Der Buchspazierer - Roman,un'],
+         [15, '9783764510473, Der Fall des Präsidenten - Thriller,un'],
+         [16, '9783832181536, Der große Sommer - Roman,un'], [17, '9783737101127, Monschau,un'],
+         [18, '9783426281550, Der Heimweg,un'], [19, '9783462050837, Eurotrash - Roman,un'],
+         [20, '9783462053289, Kim Jiyoung, geboren 1982 - Roman,un'],
+         [21, '9783896676931, Klara und die Sonne - Roman,un'],
+         [22, '9783442316397, Von der Pflicht - Eine Betrachtung,un'], [23, '9783103973150, Adas Raum - Roman,un'],
+         [24, '9783833877179, Genesis - Die Befreiung der Geschlechter,un'],
+         [25, '9783462053616, Komplett Gänsehaut,un'], [26, '9783462054767, Der Mann im roten Rock,un'],
+         [27, '9783492075008, Und erlöse uns von den Blöden - Vom Menschenverstand in hysterischen Zeiten,un'],
+         [28, '9783965840928, Die Ernährungs-Docs - Gesund und schlank durch Intervallfasten,un'],
+         [29, '9783861221265, Die fünf Sprachen der Liebe - wie Kommunikation in der Ehe gelingt,un'],
+         [30, '9783827501530, Der Wahrheit verpflichtet - Meine Geschichte,un'],
+         [31, '9783948319007, ON/ OFF GESUNDHEIT - Den Körper neu erschaffen durch Ernährung,un'],
+         [32, '9783789129407, Ronja Räubertochter,un'], [33, '9783751200530, Dunkelnacht,un']])
+    print(rdd)
 
-       def top_rec(title, j=0):
-              #calculating scores for all books
-              book_id =  books_loans[books_loans.title==title]["books_id"].values[0]
-              scores = list(enumerate(cs[book_id]))
+    # Compute TF-IDF
+    documents = rdd.map(lambda l: l[1].replace(" ", "").split(","))
 
-              sorted_scores = sorted(scores, key = lambda x:x[1], reverse=True)
-              sorted_scores = sorted_scores[1:]
+    from pyspark.mllib.feature import HashingTF, IDF
+    hashingTF = HashingTF()
+    tf = hashingTF.transform(documents)
 
-              #adding top books to array
-              all_books = []
-              print("The 4 Most recommended books for you, because you liked" + title+ "are:\n")
-              for item in sorted_scores:
-                     book_title =  books_loans[books_loans.books_id==item[0]]["title"].values[0]
-                     print(j+1, book_title)
-                     j = j+1
-                     all_books.append(book_title)
-                     if j>=4:
-                            break
-              return all_books
+    tf.cache()
+    idf = IDF().fit(tf)
+    tfidf = idf.transform(tf)
 
-       #calculating 4 recommendations for each loaned book
-       top_books=[]
-       processed_books = []
-       for i in user_loans["title"]:
-              #checking wether recommendations 
-              if i in processed_books:
-                     pass
-              else: 
-                     top_books.append(top_rec(i))
-              processed_books.append(i)
+    # Compute L2 norm
+    from pyspark.mllib.feature import Normalizer
+    labels = rdd.map(lambda l: l[0])
+    features = tfidf
 
-       #converting array of recommendation arrays to single array
-       total_rec = []
-       for i in top_books:
-              for processed_books in i:
-                     total_rec.append(processed_books)
+    normalizer = Normalizer()
+    data = labels.zip(normalizer.transform(features))
 
-       #calculating count of each book in array
-       book_count = collections.Counter(total_rec)
+    # Compute cosine similarity by multiplying the matrix with itself
+    from pyspark.mllib.linalg.distributed import IndexedRowMatrix
+    mat = IndexedRowMatrix(data).toBlockMatrix()
+    dot = mat.multiply(mat.transpose())
+    dot.toLocalMatrix().toArray()
 
-       #variable to be able to delete variables from dictionary while iterating through it
-       count_weg = copy.deepcopy(book_count)
+    data.cartesian(data) \
+        .map(lambda l: ((l[0][0], l[1][0]), l[0][1].dot(l[1][1]))) \
+        .sortByKey() \
+        .collect()
 
-       #deleting recommended books that have already been loaned
-       for key in count_weg:
-              if str(key) in str(user_loans["title"]):
-                     book_count.pop(key)
-       
-       final_recommendation = sorted(book_count, key=book_count.get, reverse=True)[:4]
-       
-       return final_recommendation
+    import pyspark.sql.functions as psf
+    df = rdd.toDF(["ID", "Office_Loc"]) \
+        .withColumn("Office_Loc", psf.split(psf.regexp_replace("Office_Loc", " ", ""), ','))
 
-    
+    from pyspark.ml.feature import HashingTF, IDF
+    hashingTF = HashingTF(inputCol="Office_Loc", outputCol="tf")
+    tf = hashingTF.transform(df)
+
+    idf = IDF(inputCol="tf", outputCol="feature").fit(tf)
+    tfidf = idf.transform(tf)
+
+    from pyspark.ml.feature import Normalizer
+    normalizer = Normalizer(inputCol="feature", outputCol="norm")
+    data = normalizer.transform(tfidf)
+
+    dot_udf = psf.udf(lambda x, y: float(x.dot(y)), DoubleType())
+    from pyspark.sql import Window
+    w = Window.partitionBy('A')
+    data.alias("i").join(data.alias("j"), psf.col("i.ID") < psf.col("j.ID")) \
+        .select(
+        psf.col("i.ID").alias("i"),
+        psf.col("j.ID").alias("j"),
+        dot_udf("i.norm", "j.norm").alias("dot")) \
+        .sort("i", "j", "dot") \
+        .show()
