@@ -1,17 +1,14 @@
-from flask import render_template, request, session
-from flask_caching import *
-
-from pandas import DataFrame
-import psycopg2
 import random
 import time
 
+from flask import render_template, request, session
+from flask_caching import *
+from pandas import DataFrame
+
 from app import app
 from app import cache
-
-from app.legerible import Legerible
 from app.kafka_messaging import Producer
-
+from app.legerible import Legerible
 
 # from app.recommendation import recommandation
 
@@ -28,7 +25,7 @@ def logging_in():
 
 
 @app.route('/')  # Home
-# @cache.cached(timeout=500)
+@cache.cached(timeout=200)
 def index():
     count_total_books = leg.get_select("SELECT COUNT(DISTINCT(n_book_id)) FROM books").iat[0, 0]
     count_loaned_books = leg.get_select("SELECT COUNT(DISTINCT(n_loan_id)) FROM loan").iat[0, 0]
@@ -54,7 +51,7 @@ def index():
 
 
 @app.route('/book')
-# @cache.cached(timeout=500)
+@cache.cached(timeout=500)
 def book():
     active_user_id = session.get('user_id', None)
     if active_user_id is not None:
@@ -216,7 +213,7 @@ def login():
 @app.route('/logged_in', methods=['POST', 'GET'])
 def logged_in():
     user_id = leg.set_user(request.form['user_name'], request.form['password'])
-
+    cache.clear()
     if user_id is False:
         session['user_id'] = user_id
         session['is_logged_in'] = 'logged_out'
@@ -239,5 +236,6 @@ def logout():
     session['user_name'] = 'no name'
     session['user_id'] = None
     leg.s_user = None
+    cache.clear()
     return render_template("success.html", title='Successful Logout',
                            text='You have been successfully logged out.')

@@ -1,15 +1,25 @@
-import os
-import sqlalchemy
-import psycopg2
-import psycopg2.extras
-import pandas as pd
+import hashlib
 import logging
+import os
 import re
 import time
 from multiprocessing.dummy import Pool as ThreadPool
 
-from app.book import Book
+import pandas as pd
+import psycopg2
+import psycopg2.extras
+import sqlalchemy
+
 from app import cache
+from app.book import Book
+
+
+def cache_key_create(*args):
+    args = [element for element in args]
+
+    key = hashlib.sha512(str(args).encode("utf-8")).hexdigest()
+    logging.error(f"Committed {key} to Cache")
+    return key
 
 
 class Legerible:
@@ -148,7 +158,7 @@ class Legerible:
     # ###########################################################################################################
     # USING FUNCTIONS
 
-    # @cache.memoize(timeout=500)
+    @cache.cached(timeout=120, make_cache_key=cache_key_create)
     def get_select(self, s_sql_statement: str) -> object:
         """
         This Function needs a Select-Statements and returns the result in a df.
@@ -202,7 +212,7 @@ class Legerible:
         return self.s_user
 
     def generate_loan(self, book_ids, user_ids, kafka_producer):
-        count_loaned_books_beginning = self.get_select("SELECT COUNT(DISTINCT(n_loan_id)) FROM loan").iat[0, 0]
+        # count_loaned_books_beginning = self.get_select("SELECT COUNT(DISTINCT(n_loan_id)) FROM loan").iat[0, 0]
         for book_id, user_id in zip(book_ids, user_ids):
             call = f"""CALL new_loan({book_id}, {user_id});"""
             self.exec_statement(call)
@@ -216,21 +226,21 @@ class Legerible:
                 add_callback(kafka_producer.on_success). \
                 add_errback(kafka_producer.on_error)
 
-        count_loaned_books_new = self.get_select("SELECT COUNT(DISTINCT(n_loan_id)) FROM loan").iat[0, 0]
-        if count_loaned_books_new > count_loaned_books_beginning:
-            return True
-        else:
-            return False
+        # count_loaned_books_new = self.get_select("SELECT COUNT(DISTINCT(n_loan_id)) FROM loan").iat[0, 0]
+        # if count_loaned_books_new > count_loaned_books_beginning:
+        return True
+        # else:
+        #     return False
 
     def make_loan(self, book_id, user):
-        count_loaned_books_beginning = self.get_select("SELECT COUNT(DISTINCT(n_loan_id)) FROM loan").iat[0, 0]
+        # count_loaned_books_beginning = self.get_select("SELECT COUNT(DISTINCT(n_loan_id)) FROM loan").iat[0, 0]
         call = f"""CALL new_loan({book_id}, {user});"""
         self.exec_statement(call)
-        count_loaned_books_new = self.get_select("SELECT COUNT(DISTINCT(n_loan_id)) FROM loan").iat[0, 0]
-        if count_loaned_books_new > count_loaned_books_beginning:
-            return True
-        else:
-            return False
+        # count_loaned_books_new = self.get_select("SELECT COUNT(DISTINCT(n_loan_id)) FROM loan").iat[0, 0]
+        # if count_loaned_books_new > count_loaned_books_beginning:
+        return True
+        # else:
+        #     return False
 
     # ############################################################################################################
 

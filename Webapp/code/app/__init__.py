@@ -5,10 +5,8 @@ from flask_caching import Cache
 
 # Initialize the app
 app = Flask(__name__, instance_relative_config=True)
-cache = Cache(app, config={'CACHE_TYPE': 'MemcachedCache', 'CACHE_MEMCACHED_SERVERS': 'memcached:11211'})
+cache = Cache(app, config={'CACHE_TYPE': 'MemcachedCache', 'CACHE_MEMCACHED_SERVERS': ('memcached:11211',)})
 
 # Load the config file
 app.config.from_object('config')
 
-from app import views   # Load the views
-from app import legerible

@@ -1,8 +1,12 @@
 flask~=1.1.2
+python3-memcached
+Flask-Caching
+
 sqlalchemy~=1.3.21
+psycopg2-binary
+
 isbnlib~=3.10.6
 pandas~=1.1.5
-psycopg2-binary
-Flask-Caching
-sklearn
+
+# sklearn
 kafka-python

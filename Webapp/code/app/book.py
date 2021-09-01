@@ -1,4 +1,5 @@
 import logging
+
 import isbnlib
 
 
@@ -75,5 +76,5 @@ class Book:
                         '{self.book_isbn}');"""
 
         call = call.replace("'None'", "NULL").replace("None", "NULL")
-        print(call)
+        # print(call)
         return call
