@@ -1,0 +1,37 @@
+---
+# This file contains initial configuration for Cassandra.
+# This config map create a cql (cassandra query language) file
+# It will initilize the schema for our bigdata storage
+# This config map is referenced by the values file in Cassandra/config.yaml
+# config.yaml will automatically be read by the cassandra helm chart
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: init-cassandra
+  namespace: legerible-cassandra
+data:
+  # Defining init script to initilize cassandra DB with cql statements
+  # replicate the keyspace on two different nodes (in this case pods)
+  "init-cassandra.cql": |-
+    CREATE KEYSPACE IF NOT EXISTS legerible
+      WITH REPLICATION = {
+        'class': 'SimpleStrategy',
+        'replication_factor': 2
+      };
+    
+    CREATE TABLE IF NOT EXISTS legerible.book_recommendation (
+      transaction_id int,
+      user_id int,
+      loaned_book_id int,
+      recommended_book_id int,
+      PRIMARY KEY(transaction_id)
+    )
+    WITH gc_grace_seconds = 0;
+
+    INSERT INTO legerible.book_recommendation (transaction_id, user_id, loaned_book_id, recommended_book_id)
+    VALUES (1, 1, 1, 1);
+
+##### Troubleshooting #####
+# If the username and password are not recognised it might be due to some persistence settings
+# I didn't find any other way, than just deleting are rebuilding minikube

@@ -33,6 +33,16 @@ ENTRYPOINT spark-submit  \
 	--class org.apache.spark.examples.SparkPi\
 	--name py-app \
 	--conf "spark.jars.ivy=/tmp/.ivy"\
+	# configurations for PySpark connection to cassandra
+	--conf "spark.sql.extensions=com.datastax.spark.connector.CassandraSparkExtensions"\
+	# hostname of the cassandra service
+	--conf "spark.cassandra.connection.host=cassandra-release.legerible-cassandra.svc.cluster.local"\
+	# username to connect to cassandra
+	--conf "spark.cassandra.auth.username=cassandra-legerible" \
+	# password to connect to cassandra
+	--conf "spark.cassandra.auth.password=ChangeThis"\
+	--packages "org.apache.spark:spark-sql-kafka-0-10_2.12:3.1.2"\
+	--packages "com.datastax.spark:spark-cassandra-connector_2.12:3.1.0" \
 	--py-files dependencies.zip\
 	--packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.1.2 \
 	/jump-start-spark/py-apps/spark-app.py

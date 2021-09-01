@@ -64,7 +64,14 @@ helm repo add bitnami https://charts.bitnami.com/bitnami
 
 ## 5. Start the application
 
-In the main directory of this repository run the following command:
+There are some commands that need to be executed post-deployment, to make the resources available on deployment execution:
+
+```
+kubectl create namespace legerible-cassandra  
+kubectl apply -f k8s/start_cassandra.yaml
+```
+
+Then in the main directory of this repository run the following command:
 
 ```
 skaffold dev
