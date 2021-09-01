@@ -2,16 +2,13 @@ from pyspark.sql import SparkSession
 from pyspark.sql.functions import *
 import numpy as np
 import pandas as pd
-import collections
-import copy
-
+import pyspark.sql.functions as F
 from pyspark.sql.types import DoubleType
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.feature_extraction.text import CountVectorizer
 from Webapp.code.app.legerible import Legerible
 from pyspark import SparkConf
 from pyspark import SparkContext
-import pyspark
 
 leg = Legerible()
 
@@ -38,7 +35,7 @@ if __name__ == "__main__":
     count_l = count_books(loans)
 
 
-    def return_bla():
+    def return_counts():
         a = []
         a.append(count_b)
         a.append(count_l)
@@ -59,10 +56,12 @@ def recommendation(user_loans):
     # converting variables to strings
     loans_list = loans.select('isbn').collect()
     books_loans = books
-    books_loans = books_loans.withColumn("loaned", books_loans("isbn").isin(loans_list))
+
+    expr = [F.last(col).alias(col) for col in loans.columns]
+    last_loaned = loans.agg(*expr).select("book_id").collect()[0][-1]
 
     # function to get all important attributes
-    df = books_loans.withColumn("important_features", concat_ws(",", "isbn", 'title', 'language', 'loaned'))
+    df = books_loans.withColumn("important_features", concat_ws(",", "isbn", 'title', 'language'))
     df.show()
 
     states1 = df.select("book_id", "important_features").rdd.flatMap(lambda x: x).collect()
@@ -143,10 +142,14 @@ def recommendation(user_loans):
     dot_udf = psf.udf(lambda x, y: float(x.dot(y)), DoubleType())
     from pyspark.sql import Window
     w = Window.partitionBy('A')
-    data.alias("i").join(data.alias("j"), psf.col("i.ID") < psf.col("j.ID")) \
-        .select(
-        psf.col("i.ID").alias("i"),
-        psf.col("j.ID").alias("j"),
-        dot_udf("i.norm", "j.norm").alias("dot")) \
-        .sort("i", "j", "dot") \
-        .show()
+
+    rec_df= data.alias("loaned_book").join(data.alias("book_id"), psf.col("loaned_book.ID") < psf.col("book_id.ID"))
+    rec_df = rec_df.select(psf.col("loaned_book.ID").alias("loaned_book"), psf.col("book_id.ID").alias("book_id"), dot_udf("loaned_book.norm", "book_id.norm").alias("Score"))
+    rec_df = rec_df.filter(F.col('loaned_book') == 0).sort(col('Score').desc())
+
+    result = []
+    for i in range(0, 4):
+        result.append(rec_df.select('book_id').collect()[i][0])
+
+    return result
+
