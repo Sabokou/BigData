@@ -26,6 +26,22 @@ This student project is part of our ...
 
 ...
 
+**Kubernetes architecture**
+
+Kubernetes is the container management system that enables this distributed application.
+Different microservices are created, automatically managed and connected to each other.
+The following illustration shows which Kubernetes resources are used and how they relate to each other:
+
+<br>
+<img src="Documentation\assets\Kubernetes-structure.jpg" >
+<br>
+<br>
+
+The dashed boxes on the right are distributed applications that are deployed with helm, a package manager for Kubernetes resources. Cassandra is a distributed database management system that can scale and store data redundant and therefore failure-resistent. Kafka is a software for message streaming and coordination, it is especially usefull to reduce communication overhead. Spark is used to analyse, enrich and manipulate streaming data.
+
+The boxes on the left are kubernetes ressources that we developed based on Docker images. The flask webapp to provide a user interface for the fictional legerible library, display information and ingest user data into the system. The postgresql database stores user and book related data, while the memcached cache servers provide users with a fast retrival time for consecutive requests for the same data.
+
+
 <br>
 
 ## Folder Structure
