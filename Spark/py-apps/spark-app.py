@@ -37,6 +37,34 @@ spark = SparkSession.builder.appName("Data Streaming").getOrCreate()
 # Set log level
 spark.sparkContext.setLogLevel('WARN')
 
+# currently the important table that you may want to access is the "book_recommendation" table
+# The schema of that table is:
+#   transaction_id int,
+#   user_id int,
+#   loaned_book_id int,
+#   recommended_book_id int,
+#   PRIMARY KEY(transaction_id)
+#
+# The fields of that table are just preliminary and you are welcome to change them in k8s/start_cassandra.yaml
+
+
+def save_to_cassandra(spark_df, cass_table, cass_keyspace="legerible"):
+    """
+    Append a spark dataframe to an existing cassandra table.
+    
+    Param
+    ----
+    spark_df: dataframe in pyspark dataframe format. Pandas dataframes are not supported, but you may convert them.
+    cass_table: name of the table in the cassandra database e.g. "book_recommendation"
+    cass_keyspace: name of the keyspace in which the table resides e.g. "legerible"
+    """
+    spark_df.write\
+        .format("org.apache.spark.sql.cassandra")\
+        .mode("append")\
+        .options(table=cass_table, keyspace=cass_keyspace)\
+        .save()
+
+
 # Example Part 2
 # Read messages from Kafka
 kafkaMessages = spark \
