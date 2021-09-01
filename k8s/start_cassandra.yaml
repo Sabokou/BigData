@@ -28,3 +28,10 @@ data:
       PRIMARY KEY(transaction_id)
     )
     WITH gc_grace_seconds = 0;
+
+    INSERT INTO legerible.book_recommendation (transaction_id, user_id, loaned_book_id, recommended_book_id)
+    VALUES (1, 1, 1, 1);
+
+##### Troubleshooting #####
+# If the username and password are not recognised it might be due to some persistence settings
+# I didn't find any other way, than just deleting are rebuilding minikube

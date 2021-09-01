@@ -2,12 +2,13 @@
 # of the cassandra distributed database.
 # It is created via a helm chart and references the 
 # ConfigMap that is definied in k8s/start_cassandra
-
+---
 dbUser:
-  user: legerible
-  forcePassword: true
-  password: "ChangeMeFast"
+  user: "cassandra-legerible"
+  password: "ChangeThis"
 
 initDBConfigMap: init-cassandra
 
-replicaCount: 2
+# try using the automatic replica count, it may be causing authentication problems
+# See also: https://community.datastax.com/questions/5175/authenticationfailed-if-one-node-is-down.html
+#replicaCount: 5
