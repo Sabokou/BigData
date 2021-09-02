@@ -30,20 +30,21 @@ def index():
     count_total_books = leg.get_select("SELECT COUNT(DISTINCT(n_book_id)) FROM books").iat[0, 0]
     count_loaned_books = leg.get_select("SELECT COUNT(DISTINCT(n_loan_id)) FROM loan").iat[0, 0]
 
-    result = leg.get_select(""" SELECT *
-                                FROM(SELECT ROW_NUMBER() OVER (ORDER BY rp.Number_of_Loans DESC) AS TOP_Loans, 
-                                                                rp.Book_ID, rp.ISBN, rp.Title, rp.Author_first_name, 
-                                                                rp.Author_last_name, rp.Number_of_Loans
-                                    FROM(SELECT l.n_book_id AS Book_ID, b.s_isbn AS ISBN, b.s_title AS Title, 
-                                                b.s_aut_first_name AS Author_first_name, 
-                                                b.s_aut_last_name AS Author_last_name,
-                                                COUNT(l.n_book_id) AS Number_of_Loans
-                                        FROM Loan AS L
-                                            LEFT JOIN Books AS B ON L.n_book_id = B.n_book_id
-                                        GROUP BY  l.n_book_id, b.s_isbn, b.s_title, 
-                                                    b.s_aut_first_name, b.s_aut_last_name) AS rp
-                                    ORDER BY rp.Number_of_Loans DESC) as r
-                                WHERE r.TOP_Loans <=10""")
+    # result = leg.get_select(""" SELECT *
+    #                             FROM(SELECT ROW_NUMBER() OVER (ORDER BY rp.Number_of_Loans DESC) AS TOP_Loans,
+    #                                                             rp.Book_ID, rp.ISBN, rp.Title, rp.Author_first_name,
+    #                                                             rp.Author_last_name, rp.Number_of_Loans
+    #                                 FROM(SELECT l.n_book_id AS Book_ID, b.s_isbn AS ISBN, b.s_title AS Title,
+    #                                             b.s_aut_first_name AS Author_first_name,
+    #                                             b.s_aut_last_name AS Author_last_name,
+    #                                             COUNT(l.n_book_id) AS Number_of_Loans
+    #                                     FROM Loan AS L
+    #                                         LEFT JOIN Books AS B ON L.n_book_id = B.n_book_id
+    #                                     GROUP BY  l.n_book_id, b.s_isbn, b.s_title,
+    #                                                 b.s_aut_first_name, b.s_aut_last_name) AS rp
+    #                                 ORDER BY rp.Number_of_Loans DESC) as r
+    #                             WHERE r.TOP_Loans <=10""")
+    result = leg.get_select("SELECT * FROM KPI ORDER BY n_count DESC LIMIT 10")
 
     return render_template("/index.html", amount_book_total=count_total_books,
                            amount_books_loaned=count_loaned_books, column_names=result.columns.values,
