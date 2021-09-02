@@ -23,8 +23,6 @@ CREATE TABLE BOOKS
     PRIMARY KEY (n_book_id)
 );
 
-
-
 CREATE TABLE USERS
 (
     n_user_id        SERIAL UNIQUE       NOT NULL,
@@ -48,20 +46,28 @@ CREATE TABLE LOAN
 
 CREATE TABLE RECOMMENDATIONS
 (
-    n_book_id    INT           NOT NULL,
-    n_user_id    INT           NOT NULL,
+    n_book_id INT NOT NULL,
+    n_user_id INT NOT NULL,
     PRIMARY KEY (n_book_id, n_user_id),
     FOREIGN KEY (n_book_id) REFERENCES BOOKS (n_book_id) ON DELETE CASCADE,
     FOREIGN KEY (n_user_id) REFERENCES USERS (n_user_id) ON DELETE CASCADE
 );
 
+CREATE TABLE KPI
+(
+    n_book_id INT NOT NULL,
+    n_count   INT,
+    PRIMARY KEY (n_book_id),
+    FOREIGN KEY (n_book_id) REFERENCES BOOKS (n_book_id) ON DELETE CASCADE
+);
+
 -- Insert Values into table
 
 INSERT INTO BOOKS(s_isbn, s_title, n_publishing_year, s_book_language,
-                   s_aut_first_name, s_aut_last_name)
-VALUES ('9780575097568', 'Rivers of London', 2010, 'en', 'Ben', 'Aaronovitch'), 
-       ('9780345524591', 'Moon Over Soho', 2011, NULL, 'Ben', 'Aaronovitch'),   
-       ('9780525516019', 'A Land of Permanent Goodbyes',  NULL, 'en', 'Atia', 'Abawi'),  
+                  s_aut_first_name, s_aut_last_name)
+VALUES ('9780575097568', 'Rivers of London', 2010, 'en', 'Ben', 'Aaronovitch'),
+       ('9780345524591', 'Moon Over Soho', 2011, NULL, 'Ben', 'Aaronovitch'),
+       ('9780525516019', 'A Land of Permanent Goodbyes', NULL, 'en', 'Atia', 'Abawi'),
        (NULL, 'Der Text des Lebens', NULL, 'de', 'Susanne', 'Abel'); 
 
 INSERT INTO USERS(s_user_name, s_password, s_first_name, s_last_name)
