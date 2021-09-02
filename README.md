@@ -5,7 +5,7 @@ The project "Legerible" for the module "Big Data" was designed by the following 
 - Alina Buss (4163246)
 - Andreas Dichter (6104795)
 - Can Berkil (2087362)
-- Canberk Alkan
+- Canberk Alkan (3275561)
 - Dominic Viola (1044258)
 - Phillip Lange (5920414)
 
@@ -53,7 +53,18 @@ The fourth page - the "loans" page - is an overview of all loans currently in th
 
 ## Architecture and Design
 
-...
+The chosen architecture for the big data application follows the **Kappa paradigm**.
+Data is streamed into the big data processing system (in our case Spark) and processed as a stream (streaming is achieved with Kafka). 
+The streaming data is enriched by static data from the database to ensure that all relevant data is taken into consideration. 
+
+As the streaming source a container streams random ISBNs from the google books API into a kafka topic. 
+This simulates new books that are added to the legerible book store.  
+
+The data stream is then ingested from Kafka by a consumer, added to the database of the library and processed by Spark to enhance book recommendations. The resulting data from spark processing are then dropped into the datalake, where it can be used for business logic or analysis in the future. The datalake is implemented with cassandra, a distributed database management system that support scalability and fault-tolerance.
+
+New books are streamed into the system in small quantities, therefore, it is not necessary to form batches of data. Thus, the Kappa architecture, where data is streamed into the system, is preferable in our use-case, instead of using the Lambda architecture that collects data into batches first.
+
+<br>
 
 **Kubernetes architecture**
 
@@ -120,10 +131,10 @@ For more information on Spark click [here](Spark/README.md).
 <li><b> Webapp </b></li>
 
 The Webapp contains the resources for a Flask application and a Postgres database. The Flask app uses python scripts
-like [legerible.py](Webapp\code\app\legerible.py) and [book.py](Webapp\code\app\book.py) to handle backend operations
+like [legerible.py](Webapp/code/app/legerible.py) and [book.py](Webapp/code/app/book.py) to handle backend operations
 like SQL queries and to fetch data via APIs. Meanwhile, the database folder contains
-the [init.sql](Webapp\database\init.sql) script that populates the database pod with initial data. This data can then be
-viewed with the help of [views.py](Webapp\code\app\views.py).
+the [init.sql](Webapp/database/init.sql) script that populates the database pod with initial data. This data can then be
+viewed with the help of [views.py](Webapp/code/app/views.py).
 
 </ul>
 
