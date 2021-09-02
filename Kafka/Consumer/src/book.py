@@ -45,7 +45,7 @@ class Book:
         self.author_first_names = []
         self.author_last_names = []
         for author in meta_data['Authors']:
-            name = author.split(" ")
+            name = author.replace("'", "").split(" ")
             last_name = name.pop(-1)
             first_names = " ".join(name)
             self.author_first_names.append(last_name)
@@ -69,7 +69,7 @@ class Book:
                         ARRAY{self.author_first_names}, 
                         ARRAY{self.author_last_names},
                         {self.publishing_year}, 
-                        '{self.book_title}', 
+                        '{self.book_title.replace("'", "")}', 
                         '{self.book_language}', 
                         '{self.book_isbn}');"""
 

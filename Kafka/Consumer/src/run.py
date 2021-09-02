@@ -1,6 +1,7 @@
 # this file is executed when the kafka consumer container is started
 # goal of the consumer is to read data from kafka streams
 import psycopg2
+import psycopg2.extras
 from kafka import KafkaConsumer
 from time import sleep
 from json import loads
@@ -22,23 +23,6 @@ consumer = KafkaConsumer(
 )
 
 
-def add_book_to_database(isbn):
-    new_book = Book()
-    new_book.set_via_isbn(isbn)
-    add_new_book(new_book)
-
-
-def add_new_book(obj_book):
-    try:
-        call = obj_book.get_s_sql_call()
-        exec_statement(call)
-    except Exception as an_exception:
-        logging.error(an_exception)
-        logging.error("Book couldn't be added.")
-        return False
-    return True
-
-
 def exec_statement(sql: str):
     """
         can execute every kind of Sql-statement but does NOT return a response.
@@ -56,16 +40,36 @@ def exec_statement(sql: str):
         db_cursor.execute(sql)
         psycopg2_connection.commit()
         db_cursor.close()
+
         return True
     except psycopg2.errors.InFailedSqlTransaction:
         logging.error("Transaction Failed - Review given inputs!")
         return False
+        
+def add_new_book(obj_book):
+    try:
+        call = obj_book.get_s_sql_call()
+        exec_statement(call)
+        logging.info(f"Added book {obj_book.isbn} to postgres")
+    except Exception as an_exception:
+        logging.warning(an_exception)
+        logging.warning("Book couldn't be added.")
+        return False
+    return True
+
+def add_book_to_database(isbn):
+    new_book = Book()
+    new_book.set_via_isbn(isbn)
+    add_new_book(new_book)
 
 
 for payload in consumer:
-    add_book_to_database(payload.value)
-    print(
-        f"################ \n \
-        Received payload: {payload.value} \n \
-        ################"
-    )
+    add_book_to_database(payload.value.get("isbn"))
+    # print(
+    #     f"################ \n \
+    #     Received payload: {payload.value.get('isbn')} \n \
+    #     ################"
+    # )
+    # sleep between different API calls to collect isbn book data
+    # otherwise we might get blocked
+    sleep(5)
