@@ -3,8 +3,8 @@
 The project "Legerible" for the module "Big Data" was designed by the following six group members:
 
 - Alina Buss (4163246)
-- Andreas
-- Can
+- Andreas (6104795)
+- Can (2087362)
 - Canberk
 - Dominic Viola ()
 - Phillip Lange (5920414)
