@@ -15,8 +15,9 @@ consumer = KafkaConsumer(
     bootstrap_servers=['kafka-release.legerible-kafka.svc.cluster.local:9092'],
     # convert all consumed data from json to python native
     value_deserializer=lambda x: loads(x.decode('utf-8')),
-    # when restarting the container, the consumer starts at the earliest unread message
-    auto_offset_reset='earliest',
+    # when restarting the container, the consumer starts at the latest unread message to account for restarts of the
+    # container and missed book ids being less troubling than adding the same book multiple times
+    auto_offset_reset='latest',
     enable_auto_commit=False
 )
 
