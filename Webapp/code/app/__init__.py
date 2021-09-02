@@ -10,3 +10,5 @@ cache = Cache(app, config={'CACHE_TYPE': 'MemcachedCache', 'CACHE_MEMCACHED_SERV
 # Load the config file
 app.config.from_object('config')
 
+from app import views   # Load the views
+from app import legerible
