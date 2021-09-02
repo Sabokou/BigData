@@ -1,33 +1,10 @@
-# import findspark
-# findspark.init()
-
-# from pyspark import SparkContext
-# from pyspark.streaming import StreamingContext
-# from pyspark.streaming.kafka import KafkaUtils
-
-# if __name__=="__main__":
-#     sc = SparkContext(appName="Kafka Spark Streaming")
-    
-#     ssc = StreamingContext(sc, 60)
-
-#     message=KafkaUtils.createDirectStream(ssc, topics=["testtopic"], kafkaParams={"metadata.broker.list":"kafka-release.legerible-kafka.svc.cluster.local:9092"})
-
-#     words=message.map(lambda x: x[1]).flatMap(lambda x: x.split(" "))
-
-#     wordcount= words.map(lambda x: (x,1)).reduceByKey(lambda a,b: a+b)
-
-#     wordcount.pprint()
-
-#     ssc.start()
-#     ssc.awaitTermination()
-
+# import sqlalchemy
+import psycopg2
 
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import *
-from pyspark.sql.types import IntegerType, StringType, StructType, TimestampType
+from pyspark.sql.types import IntegerType, StructType, TimestampType
 
-# dbOptions = {"host": "database", 'port': 5432, "user": "postgres", "password": "1234"}
-# dbSchema = 'postgres'
 windowDuration = '5 minutes'
 slidingDuration = '1 minute'
 # Example Part 1
@@ -36,6 +13,7 @@ spark = SparkSession.builder.appName("Data Streaming").getOrCreate()
 
 # Set log level
 spark.sparkContext.setLogLevel('WARN')
+
 
 # currently the important table that you may want to access is the "book_recommendation" table
 # The schema of that table is:
@@ -58,10 +36,10 @@ def save_to_cassandra(spark_df, cass_table, cass_keyspace="legerible"):
     cass_table: name of the table in the cassandra database e.g. "book_recommendation"
     cass_keyspace: name of the keyspace in which the table resides e.g. "legerible"
     """
-    spark_df.write\
-        .format("org.apache.spark.sql.cassandra")\
-        .mode("append")\
-        .options(table=cass_table, keyspace=cass_keyspace)\
+    spark_df.write \
+        .format("org.apache.spark.sql.cassandra") \
+        .mode("append") \
+        .options(table=cass_table, keyspace=cass_keyspace) \
         .save()
 
 
@@ -74,25 +52,21 @@ kafkaMessages = spark \
             "kafka-release.legerible-kafka.svc.cluster.local:9092") \
     .option("subscribe", "loan-book-topic") \
     .load()
-    # .option("startingOffsets", "earliest") \
-    
+# .option("startingOffsets", "earliest") \
+
 
 print("kafkaMessages", kafkaMessages)
 
-# kafkaMessages.head()
 # Define schema of tracking data
 trackingMessageSchema = StructType() \
     .add("user_id", IntegerType()) \
     .add("book_id", IntegerType()) \
     .add("timestamp", IntegerType())
 
-
-
 # Example Part 3
 # Convert value: binary -> JSON -> fields + parsed timestamp
 
 trackingMessages = kafkaMessages.selectExpr("CAST(key AS STRING)", "CAST(value AS STRING)")
-    
 
 tracking_messages_df = trackingMessages.select(
     # Extract 'value' from Kafka message (i.e., the tracking data)
@@ -106,8 +80,8 @@ print("tracking_messages_df", tracking_messages_df)
 messages_df = tracking_messages_df.select(
     # Convert Unix timestamp to TimestampType
     from_unixtime(col('json.timestamp'))
-    .cast(TimestampType())
-    .alias("parsed_timestamp"),
+        .cast(TimestampType())
+        .alias("parsed_timestamp"),
 
     # Select all JSON fields
     col("json.*")
@@ -140,37 +114,41 @@ consoleDump = popular \
     .option("truncate", "false") \
     .start()
 
+
 # Example Part 6
 
+def save_to_database(batchDataframe, batchId):
+    # Define function to save a dataframe to mysql
+    def save_to_db(iterator):
+        # Connect to database and use schema
+        psycopg2_connection = psycopg2.connect(database="postgres", user="postgres", port=5432,
+                                               password="1234", host="database")
+        db_cursor = psycopg2_connection.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
-# def saveToDatabase(batchDataframe, batchId):
-#     # Define function to save a dataframe to mysql
-#     def save_to_db(iterator):
-#         # Connect to database and use schema
-#         session = mysqlx.get_session(dbOptions)
-#         session.sql("USE popular").execute()
+        for row in iterator:
+            # Run upsert (insert or update existing)
+            sql = f"""INSERT INTO KPI
+                      (n_book_id, n_count) VALUES ({row.book_id}, {row.views})
+                      ON CONFLICT (n_book_id) DO UPDATE
+                      SET count={row.views}"""
 
-#         for row in iterator:
-#             # Run upsert (insert or update existing)
-#             sql = session.sql("INSERT INTO popular "
-#                               "(mission, count) VALUES (?, ?) "
-#                               "ON DUPLICATE KEY UPDATE count=?")
-#             sql.bind(row.mission, row.views, row.views).execute()
+            db_cursor.execute(sql)
+            psycopg2_connection.commit()
 
-#         session.close()
+        db_cursor.close()
 
     # Perform batch UPSERTS per data partition
-    # batchDataframe.foreachPartition(save_to_db)
+    batchDataframe.foreachPartition(save_to_db)
+
 
 # Example Part 7
 
-"""
-dbInsertStream = postgres.writeStream \
+
+dbInsertStream = popular.writeStream \
     .trigger(processingTime=slidingDuration) \
     .outputMode("update") \
-    .foreachBatch(saveToDatabase) \
+    .foreachBatch(save_to_database) \
     .start()
-"""
 
 # Wait for termination
 spark.streams.awaitAnyTermination()

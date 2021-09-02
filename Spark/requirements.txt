@@ -1,2 +1,4 @@
-kafka-python
+# kafka-python
 # pyspark
+psycopg2-binary
+venv-pack
