@@ -222,7 +222,7 @@ class Legerible:
                        "timestamp": int(time.time())}
 
             # Send Payload via default producer
-            kafka_producer.producer.send('book_stream_topic', value=payload). \
+            kafka_producer.producer.send('book_loan_topic', value=payload). \
                 add_callback(kafka_producer.on_success). \
                 add_errback(kafka_producer.on_error)
 

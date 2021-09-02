@@ -50,7 +50,7 @@ kafkaMessages = spark \
     .format("kafka") \
     .option("kafka.bootstrap.servers",
             "kafka-release.legerible-kafka.svc.cluster.local:9092") \
-    .option("subscribe", "loan-book-topic") \
+    .option("subscribe", "book_loan_topic") \
     .load()
 # .option("startingOffsets", "earliest") \
 
