@@ -9,63 +9,55 @@ from sklearn.feature_extraction.text import CountVectorizer
 from Webapp.code.app.legerible import Legerible
 from pyspark import SparkConf
 from pyspark import SparkContext
+from pyspark.mllib.feature import HashingTF, IDF
 
 leg = Legerible()
 
-if __name__ == "__main__":
-    loans = leg.get_select("""SELECT L.n_loan_id AS Loan_ID, L.ts_now as Timestamp, B.s_isbn AS ISBN, B.s_title AS Title, 
-                                      B.s_aut_first_name AS Author_first_name, B.s_aut_last_name AS Author_last_name, U.s_user_name AS User
-                                   FROM Loan AS L
-                                          LEFT JOIN Books AS B ON (L.n_book_id = B.n_book_id)
-                                          LEFT JOIN Users AS U ON (L.n_user_id = U.n_user_id)""")
+all_loans = leg.get_select("""SELECT L.n_loan_id AS Loan_ID, L.ts_now as Timestamp, B.s_isbn AS ISBN, B.s_title AS Title, 
+                                  B.s_aut_first_name AS Author_first_name, B.s_aut_last_name AS Author_last_name, U.s_user_name AS User
+                               FROM Loan AS L
+                                      LEFT JOIN Books AS B ON (L.n_book_id = B.n_book_id)
+                                      LEFT JOIN Users AS U ON (L.n_user_id = U.n_user_id)""")
 
-    sc = SparkSession.builder.appName("spark-app").master("local[*]").getOrCreate()
-    sparkContext = sc.sparkContext
+sc = SparkSession.builder.appName("spark-app").master("local[*]").getOrCreate()
+sparkContext = sc.sparkContext
+lines = sc.read.csv("isbn.txt")
 
-    lines = sc.read.csv("isbn.txt")
-    lines.show()
+def count_books(self):
+    return self.distinct().count()
 
+top_x = all_loans.groupby("books_id").count()
+count_b = count_books(lines)
+count_l = count_books(all_loans)
 
-    def count_books(self):
-        return self.distinct().count()
+def return_counts():
+    a = []
+    a.append(count_b)
+    a.append(count_l)
+    a.append(top_x)
+    return a
+leg = Legerible()
 
-
-    top_x = loans.groupby("books_id").count()
-    count_b = count_books(lines)
-    count_l = count_books(loans)
-
-
-    def return_counts():
-        a = []
-        a.append(count_b)
-        a.append(count_l)
-        a.append(top_x)
-        return a
-
-
-    leg = Legerible()
-
-
-def recommendation(user_loans):
+def recommendation(user_id):
+    #getting all loaned books by the user
+    loans = leg.get_selectt(f"""SELECT L.ts_now as Timestamp, B.s_isbn AS ISBN, B.s_title AS Title,
+                                        B.s_aut_first_name AS Author_first_name, B.s_aut_last_name AS Author_last_name
+                                    FROM Loan AS L
+                                        LEFT JOIN Books AS B ON (L.n_book_id = B.n_book_id)
+                                        LEFT JOIN Users AS U ON (L.n_user_id = U.n_user_id)
+                                    WHERE U.s_user_name LIKE '%{user_id}%'""")
     # getting books and loaned books from db
-    books = leg.get_select("""SELECT n_book_id, s_isbn AS ISBN, s_title AS Title, n_publishing_year AS Publishing_year, 
+    books_loans = leg.get_select("""SELECT n_book_id, s_isbn AS ISBN, s_title AS Title, n_publishing_year AS Publishing_year, 
                                       s_book_language AS language,s_aut_first_name AS Author_first_name, 
                                       s_aut_last_name AS Author_last_name
                                    FROM BOOKS""")
 
-    # converting variables to strings
-    loans_list = loans.select('isbn').collect()
-    books_loans = books
-
+    #getting last loaned book
     expr = [F.last(col).alias(col) for col in loans.columns]
     last_loaned = loans.agg(*expr).select("book_id").collect()[0][-1]
 
     # function to get all important attributes
     df = books_loans.withColumn("important_features", concat_ws(",", "isbn", 'title', 'language'))
-    df.show()
-
-    states1 = df.select("book_id", "important_features").rdd.flatMap(lambda x: x).collect()
-    print(states1)
 
     # Bringing the important_features into the RDD Form
     rdd = sparkContext.parallelize(
@@ -92,7 +84,6 @@ def recommendation(user_loans):
          [30, '9783827501530, Der Wahrheit verpflichtet - Meine Geschichte,un'],
          [31, '9783948319007, ON/ OFF GESUNDHEIT - Den Körper neu erschaffen durch Ernährung,un'],
          [32, '9783789129407, Ronja Räubertochter,un'], [33, '9783751200530, Dunkelnacht,un']])
-    print(rdd)
 
     # Compute TF-IDF
     documents = rdd.map(lambda l: l[1].replace(" ", "").split(","))
@@ -125,6 +116,7 @@ def recommendation(user_loans):
         .collect()
 
     import pyspark.sql.functions as psf
+    #creating model
     df = rdd.toDF(["ID", "Office_Loc"]) \
         .withColumn("Office_Loc", psf.split(psf.regexp_replace("Office_Loc", " ", ""), ','))
 
@@ -132,24 +124,27 @@ def recommendation(user_loans):
     hashingTF = HashingTF(inputCol="Office_Loc", outputCol="tf")
     tf = hashingTF.transform(df)
 
+    #fitting data into model
     idf = IDF(inputCol="tf", outputCol="feature").fit(tf)
     tfidf = idf.transform(tf)
 
     from pyspark.ml.feature import Normalizer
+    #normilize feautures
     normalizer = Normalizer(inputCol="feature", outputCol="norm")
     data = normalizer.transform(tfidf)
 
     dot_udf = psf.udf(lambda x, y: float(x.dot(y)), DoubleType())
-    from pyspark.sql import Window
-    w = Window.partitionBy('A')
 
+    #creating recommendation dataframe
     rec_df= data.alias("loaned_book").join(data.alias("book_id"), psf.col("loaned_book.ID") < psf.col("book_id.ID"))
+    #calculating the score point between last loaned book and all books
     rec_df = rec_df.select(psf.col("loaned_book.ID").alias("loaned_book"), psf.col("book_id.ID").alias("book_id"), dot_udf("loaned_book.norm", "book_id.norm").alias("Score"))
-    rec_df = rec_df.filter(F.col('loaned_book') == 0).sort(col('Score').desc())
+    rec_df = rec_df.filter(F.col('loaned_book') == last_loaned).sort(col('Score').desc())
 
     result = []
     for i in range(0, 4):
         result.append(rec_df.select('book_id').collect()[i][0])
-
+        
+    #returning result in form of array with top4 recommendation book_id
     return result
 
