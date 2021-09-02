@@ -3,10 +3,10 @@
 The project "Legerible" for the module "Big Data" was designed by the following six group members:
 
 - Alina Buss (4163246)
-- Andreas (6104795)
-- Can (2087362)
-- Canberk
-- Dominic Viola ()
+- Andreas Dichter (6104795)
+- Can Berkil (2087362)
+- Canberk Alkan
+- Dominic Viola (1044258)
 - Phillip Lange (5920414)
 
 The project resembles an online media library on the basis of a big data architecture with all necessary components.
@@ -29,7 +29,7 @@ The project resembles an online media library on the basis of a big data archite
 
 ## Use-Case
 
-The media libary has the primary function of allowing user to loan books. This loan is given the idea more reflective of
+The media library has the primary function of allowing users to loan books. This loan is given the idea more reflective of
 a download functionality. To "loan" books one has to be logged in via the log-in functionality which is situated in the
 top right corner of the page. There are three users created one of which being
 "nadia" with password "1234". The navigation bar is situated on the left-hand side and can be used to navigate between
