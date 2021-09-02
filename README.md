@@ -11,7 +11,7 @@ The project "Legerible" for the module "Big Data" was designed by the following 
 
 The project resembles an online media library on the basis of a big data architecture with all necessary components.
 
-<img src="Documentation\assets\Ziel-Architektur.jpg" >
+<img src="Documentation\assets\Ziel-Architektur.png" >
 
 ## Table of Contents
 
