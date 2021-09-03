@@ -2,7 +2,8 @@
 
 ## General
 
-The web app was programmed in Python using Flask as web framework.
+The web app was programmed in Python using Flask as web framework. The database is a postgres 12.2 and the cache server
+is a memcached server.
 
 ```run.py```
 
@@ -15,7 +16,7 @@ This file is used to enable the debug functionality integrated in flask.
 
 ## /app folder
 
-The /app folder resembles the default structure advocated by flask for multipage applications with split "frontend"
+The /app folder resembles the default structure advocated by flask for multi-page applications with split "frontend"
 and "backend".
 
 - ```static/``` contains assets like the css files and all necessary Javascript applets.
@@ -27,7 +28,7 @@ and "backend".
 - ```legerible.py``` includes all functions of the backend which is mostly functions concerning database connection and
   access.
 - ```views.py``` is the central control file which is responsible for the page navigation and the provisioning of the
-  web pages. Each pages is described in a function that uses select queries to return the jinja template with all
+  web pages. Each page is described in a function that uses select queries to return the jinja template with all
   contents .
 - ```book.py``` is an outsourced class which methods are used to interact with books.
 - ```kafka_messaging.py``` is an outsourced class that has the needed functionality to send messages through kafka.

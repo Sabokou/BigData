@@ -29,9 +29,10 @@ The project resembles an online media library on the basis of a big data archite
 
 ## Use-Case
 
-The media library has the primary function of allowing users to loan books. This loan is given the idea more reflective of
-a download functionality. To "loan" books one has to be logged in via the log-in functionality which is situated in the
-top right corner of the page. There are three users created one of which being
+The media library has the primary function of allowing users to loan books. These loans are more reflective of a
+download functionality but since a true download functionality is out of scope for this project it was decided that it
+would be considered as a loan instead. To "loan" books one has to be logged in via the log-in functionality which is
+situated in the top right corner of the page. There are three users created one of which being
 "nadia" with password "1234". The navigation bar is situated on the left-hand side and can be used to navigate between
 the different pages.
 
@@ -53,16 +54,21 @@ The fourth page - the "loans" page - is an overview of all loans currently in th
 
 ## Architecture and Design
 
-The chosen architecture for the big data application follows the **Kappa paradigm**.
-Data is streamed into the big data processing system (in our case Spark) and processed as a stream (streaming is achieved with Kafka). 
-The streaming data is enriched by static data from the database to ensure that all relevant data is taken into consideration. 
+The chosen architecture for the big data application follows the **Kappa paradigm**. Data is streamed into the big data
+processing system (in our case Spark) and processed as a stream (streaming is achieved with Kafka). The streaming data
+is enriched by static data from the database to ensure that all relevant data is taken into consideration.
 
-As the streaming source a container streams random ISBNs from the google books API into a kafka topic. 
-This simulates new books that are added to the legerible book store.  
+The streaming source a container streams random ISBNs from the Google books API into a kafka topic. This simulates new
+books that would added to the legerible book plattform.
 
-The data stream is then ingested from Kafka by a consumer, added to the database of the library and processed by Spark to enhance book recommendations. The resulting data from spark processing are then dropped into the datalake, where it can be used for business logic or analysis in the future. The datalake is implemented with cassandra, a distributed database management system that support scalability and fault-tolerance.
+The data stream is then ingested from Kafka by a consumer, added to the database of the library and processed by Spark
+to enhance book recommendations. The resulting data from spark processing are then dropped into the datalake, where it
+can be used for business logic or analysis in the future. The datalake is implemented with Apache Cassandra, a
+distributed database management system that support scalability and is fault-tolerant due to replication.
 
-New books are streamed into the system in small quantities, therefore, it is not necessary to form batches of data. Thus, the Kappa architecture, where data is streamed into the system, is preferable in our use-case, instead of using the Lambda architecture that collects data into batches first.
+New books are streamed into the system in small quantities, therefore, it is not necessary to form batches of data.
+Thus, the Kappa architecture, where data is streamed into the system, is preferable in our use-case instead of using the
+Lambda architecture that first aggregates data into batches.
 
 <br>
 
@@ -124,9 +130,11 @@ For more information on Kafka resources look [here](Kafka/README.md)
 <li><b> Spark </b></li>
 
 The Spark folder contains resources to build a container that prepares dependencies and submits them together
-with [spark-app.py](Spark/py-apps/spark-app.py) to the spark cluster, that is created [here](skaffold.yaml).
-
-For more information on Spark click [here](Spark/README.md).
+with [spark-app.py](Spark/Loan_Counts/py-apps/Spark_Loan_Counts.py) to the spark cluster, that is
+created [here](skaffold.yaml). This however proved to not function due to limitations in the interaction between Spark's
+standalone cluster and PySpark
+being [incompatible] (https://github.com/bitnami/charts/issues/1626#issuecomment-571652789). It was then decided to use
+local deployment instead to circumvent the problem. For more information on Spark click [here](Spark/README.md).
 
 <li><b> Webapp </b></li>
 
