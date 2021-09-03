@@ -61,7 +61,7 @@ It is also necessary to specify a topic.
 I suggest we use two different topics:
 
 <ol>
-<li><b>loan-book-topic</b></li>
+<li><b>book_loan_topic</b></li>
 This topic will contain all data streams that are related to new loans that users make.
 The streamed data is in json format and the json has two key value pairs: user_id (int) and book_id (int)
 
