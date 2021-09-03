@@ -50,7 +50,7 @@ def add_new_book(obj_book):
     try:
         call = obj_book.get_s_sql_call()
         exec_statement(call)
-        logging.info(f"Added book {obj_book.isbn} to postgres")
+        logging.info(f"Added book {obj_book.book_isbn} to postgres")
     except Exception as an_exception:
         logging.warning(an_exception)
         logging.warning("Book couldn't be added.")

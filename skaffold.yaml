@@ -10,10 +10,10 @@ build:
     - image: webapp
       context: .
 
-    - image: spark-starter
+    - image: spark-starter-loans
       context: Spark/Loan_Counts/
 
-    - image: spark-starter2
+    - image: spark-starter-recommendations
       context: Spark/Recommendations/
 
     - image: kafka-consumer
