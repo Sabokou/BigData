@@ -64,7 +64,10 @@ def add_book_to_database(isbn):
 
 
 for payload in consumer:
-    add_book_to_database(payload.value.get("isbn"))
+    try:
+        add_book_to_database(payload.value.get("isbn"))
+    except:
+        print("Book couldn't be added")
     # print(
     #     f"################ \n \
     #     Received payload: {payload.value.get('isbn')} \n \
