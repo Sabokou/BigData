@@ -46,9 +46,10 @@ CREATE TABLE LOAN
 
 CREATE TABLE RECOMMENDATIONS
 (
-    n_book_id INT NOT NULL,
-    n_user_id INT NOT NULL,
-    PRIMARY KEY (n_book_id, n_user_id),
+    n_book_id INT       NOT NULL,
+    n_user_id INT       NOT NULL,
+    ts_now    TIMESTAMP NOT NULL DEFAULT current_timestamp,
+    PRIMARY KEY (n_book_id, n_user_id, ts_now),
     FOREIGN KEY (n_book_id) REFERENCES BOOKS (n_book_id) ON DELETE CASCADE,
     FOREIGN KEY (n_user_id) REFERENCES USERS (n_user_id) ON DELETE CASCADE
 );
