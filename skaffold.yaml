@@ -11,8 +11,11 @@ build:
       context: .
 
     - image: spark-starter
-      context: Spark/
-    
+      context: Spark/Loan_Counts/
+
+    - image: spark-starter2
+      context: Spark/Recommendations/
+
     - image: kafka-consumer
       context: Kafka/Consumer/
 
@@ -21,12 +24,12 @@ build:
 
 deploy:
   # Don't wait for deployments to stabilize. Due to numerous connection errors in the beginning while pods are created  
-  statusCheck: True
-  statusCheckDeadlineSeconds: 120
+  statusCheck: False
+  statusCheckDeadlineSeconds: 600
 
-  # Helm is used to automate some steps of setting up the cluster ressources
+  # Helm is used to automate some steps of setting up the cluster resources
   # helm CLI is in beta, so manual instructions will be included just in case
-  helm: 
+  helm:
     releases:
       - name: kafka-release
         remoteChart: bitnami/kafka # will automatically install the latest version of kafka
