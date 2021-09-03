@@ -28,7 +28,7 @@ Lastly if the spark job is started skaffold will also make a web GUI available t
 at http://localhost:7077.
 
 
-# Structure
+# Folder structure
 
 Since there are two different applications using Spark for data processing a folder was created for each of them. Within
 the following structure was used:
@@ -47,8 +47,16 @@ Contains the dependencies, that are needed to run the spark job.
 Packages the dependencies and starts the spark job with the "spark-submit" script that comes with spark.
 </ol>
 
+# Integration of Kafka
+
+Both applications rely on streaming data from the web app to produce a result. The integration of Kafka for the
+recommendation system can be seen in this diagram:
+<img src="Documentation\assets\Schema_Integration_Kafka_Nach_Spark.png" >
+
+A similar approach is used for the "loan count" application, however the data it writes to the database is different.
 
 # Troubleshooting notes
+
 ## Start a spark application manually
 
 Now you can start the application for reference [here](../k8s/README.md) is the instruction how to start the application

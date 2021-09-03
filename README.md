@@ -21,8 +21,8 @@ The project resembles an online media library on the basis of a big data archite
 2. [Architecture and Design](#Architecture-and-Design)
 3. [Folder Structure](#Folder-Structure)
 4. [Setup Instructions](#Setup-Instructions)
-5. [Screencast Demonstration](#Screencast-Demonstration)
-
+5. [Issues at the end](#Issues-at-the-end)
+6. [Screencast Demonstration](#Screencast-Demonstration)
 ---
 
 <br>
@@ -36,17 +36,17 @@ situated in the top right corner of the page. There are three users created one 
 "nadia" with password "1234". The navigation bar is situated on the left-hand side and can be used to navigate between
 the different pages.
 
-The first page - the homepage - provides an overview of the ten most loaned books, and the total amount of loans and
-books in the system. The top ten is created as a result of the kafka messages send to the backend in Spark.
+The first page - the homepage - provides an overview of the ten most loaned books and the total amount of loans and
+books in the system. The top ten are created as a result of the Kafka messages send to the backend in Spark.
 
-The second page - the "books page" - provides an overview of all books that are saved in the postgres database depending
+The second page - the "books page" - provides an overview of all books that are saved in the Postgres database depending
 on if the user is logged a "Loan" button is added to each row of the table. Furthermore, a button is provided to
 simulate 50 books being loaned at random. Each loan is saved to the database directly and published via Kafka.
 Additionally, a search function is provided to find books more easily.
 
-The third page - the "profile" page - provides an overview of all user information like address, name and their loans.
+The third page - the "profile" page - provides an overview of all user information like address, name, and their loans.
 Moreover, a user is presented with 4 recommendations based on previously loaned books, which are computed in the spark
-backend with a cosine similarity.
+backend with cosine similarity.
 
 The fourth page - the "loans" page - is an overview of all loans currently in the system.
 
@@ -58,25 +58,26 @@ The chosen architecture for the big data application follows the **Kappa paradig
 processing system (in our case Spark) and processed as a stream (streaming is achieved with Kafka). The streaming data
 is enriched by static data from the database to ensure that all relevant data is taken into consideration.
 
-The streaming source a container streams random ISBNs from the Google books API into a kafka topic. This simulates new
-books that would added to the legerible book plattform.
+The streaming source a container streams random ISBNs from the Google books API into a Kafka topic. This simulates new
+books that would be added to the legerible book platform.
 
-The data stream is then ingested from Kafka by a consumer, added to the database of the library and processed by Spark
-to enhance book recommendations. The resulting data from spark processing are then dropped into the datalake, where it
-can be used for business logic or analysis in the future. The datalake is implemented with Apache Cassandra, a
-distributed database management system that support scalability and is fault-tolerant due to replication.
+The data stream is then ingested from Kafka by a consumer, added to the database of the library, and processed by Spark
+to enhance book recommendations. The resulting data from spark processing are then dropped into the data lake, where it
+can be used for business logic or analysis in the future. The data lake is implemented with Apache Cassandra, a
+distributed database management system that supports scalability and is fault-tolerant due to replication.
 
 New books are streamed into the system in small quantities, therefore, it is not necessary to form batches of data.
-Thus, the Kappa architecture, where data is streamed into the system, is preferable in our use-case instead of using the
-Lambda architecture that first aggregates data into batches.
+Thus, the Kappa architecture, where data is streamed into the system, is preferable in our use-case to using a Lambda
+architecture in which data is first aggregated into batches.
+
 
 <br>
 
 **Kubernetes architecture**
 
-Kubernetes is the container management system that enables this distributed application.
-Different microservices are created, automatically managed and connected to each other.
-The following illustration shows which Kubernetes resources are used and how they relate to each other:
+Kubernetes is the container management system that enables this distributed application. Different microservices are
+created, automatically managed and connected to each other. The following illustration shows which Kubernetes resources
+are used and how they relate to each other:
 
 <br>
 <img src="Documentation\assets\Kubernetes-structure.jpg" >
@@ -85,15 +86,14 @@ The following illustration shows which Kubernetes resources are used and how the
 
 The dashed boxes on the right are distributed applications that are deployed with helm, a package manager for Kubernetes
 resources. Cassandra is a distributed database management system that can scale and store data redundantly and is
-therefore failure-resistent. Kafka is a software for message streaming and coordination, it is especially useful to
-reduce communication overhead between different applications. Spark is used to analyse, enrich and manipulate the
-streaming data.
+therefore failure-resistant. Kafka is a tool for message streaming and coordination, it is especially useful to reduce
+communication overhead between different applications. Spark is used to analyze, enrich and manipulate the streaming
+data.
 
-The boxes on the left are kubernetes resources that we developed based on Docker images. The flask webapp to provide a
-user with an interface for the fictional legerible library, display information and ingest user data into the system.
-The postgresql database stores user and book related data, while the memcached cache servers provide users with a fast
+The boxes on the left are Kubernetes resources that we developed based on Docker images. The flask web app provides a
+user with an interface for the fictional legerible library, displays information, and ingests user data into the system.
+The PostgreSQL database stores user and book related data, while the Memcached cache servers provide users with a fast
 retrieval time for consecutive requests for the same data.
-
 
 <br>
 
@@ -164,6 +164,28 @@ Open  **website**: http://127.0.0.1:5000/
 Open **spark dashboard**: http://127.0.0.1:7077/
 
 <br>
+
+## Issues at the end
+
+The entire project is not deployable on older hardware or laptops due to the unavailability of CPU cores and RAM. This
+lead to the majority of participants being unable to test the entire project working at once and seeing if the
+communication between individual components worked or not.
+
+Trying to utilize a Spark standalone cluster instead of deploying to local introduced a multitude of problems towards
+the end that resulted in a long troubleshooting process especially due to the nature of the error eluding us for a long
+time given that the error was:
+
+```WARN TaskSchedulerImpl: Initial job has not accepted any resources; check your cluster UI to ensure that workers are registered and have sufficient resources```
+
+This could easily have been in correlation to insufficient RAM or CPU cores for the container. Especially since the
+primary answers found in the context is that the workers and or the job just needs to be allocated additional resources.
+Additionally, we found out that the normal way of packaging python libraries and relying on the package installer of the
+aforementioned cluster doesn't work and we figured out a workaround by using the **virtual environment** feature and
+submitting the libraries as an archive instead of as python-files.
+
+The used Kafka installation is also problematic as it takes longer than most containers to stabilize and properly
+deploy. Leading to multiple crashes during startup and potentially during the stabilization phase, which results in the
+skaffold not being deployed.
 
 ## Screencast Demonstration
 
