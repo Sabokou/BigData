@@ -19,12 +19,20 @@ data:
         'class': 'SimpleStrategy',
         'replication_factor': 2
       };
-    
+
     CREATE TABLE IF NOT EXISTS legerible.book_recommendation (
       transaction_id int,
       user_id int,
       loaned_book_id int,
       recommended_book_id int,
+      PRIMARY KEY(transaction_id)
+    )
+    WITH gc_grace_seconds = 0;
+
+    CREATE TABLE IF NOT EXISTS legerible.loan_counts (
+      transaction_id int,
+      book_id int,
+      loan_count int,
       PRIMARY KEY(transaction_id)
     )
     WITH gc_grace_seconds = 0;
