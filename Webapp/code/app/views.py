@@ -10,8 +10,6 @@ from app import cache
 from app.kafka_messaging import Producer
 from app.legerible import Legerible
 
-# from app.recommendation import recommandation
-
 leg = Legerible()
 kafka_producer = Producer()
 app.secret_key = 'dljsawadslqk24e21cjn!Ew@@dsa5'
@@ -194,7 +192,11 @@ def profile():
                                         LEFT JOIN Users AS U ON (L.n_user_id = U.n_user_id)
                                     WHERE U.s_user_name LIKE '%{user}%'""")
 
-        result3 = ""  # recommandation(result1)
+        result3 = leg.get_select(f"""SELECT n_book_id 
+                                     FROM RECOMMANDATIONS 
+                                     WHERE n_user_id = {active_user_id} 
+                                     ORDER BY ts_now DESC 
+                                     LIMIT 4""")
 
         return render_template("profile.html", user=user, column_names=result.columns.values,
                                row_data=list(result.values.tolist()), link_column='none', zip=zip,
@@ -205,6 +207,7 @@ def profile():
     else:
         return render_template("fail.html", title='Error',
                                text='You are not logged in!')
+
 
 @app.route('/login', methods=['POST', 'GET'])
 def login():
