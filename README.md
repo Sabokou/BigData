@@ -192,5 +192,8 @@ deploy. Leading to multiple crashes during startup and potentially during the st
 skaffold not being deployed.
 
 ## Screencast Demonstration
+If this embedding doesn't work, you can also view the video after downloading it [here](Documentation/assets/legerible_screencast_presentation.mkv).
 
-...
+Alternatively you can view the video with this link: https://youtu.be/JeYr-gIW1EA
+
+<video src='./Documentation/assets/legerible_screencast_presentation.mkv' />
