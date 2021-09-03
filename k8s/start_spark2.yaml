@@ -2,20 +2,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: spark-starter-deployment2
+  name: spark-starter-deployment-recommendations
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: spark-starter-pod2
+      app: spark-starter-pod-recommendations
   template:
     metadata:
       labels:
-        app: spark-starter-pod2
+        app: spark-starter-pod-recommendations
     spec:
       containers:
-        - name: spark-starter-container2
-          image: spark-starter2 # This name is defined in skaffold.yaml
+        - name: spark-starter-recommendations
+          image: spark-starter-recommendations # This name is defined in skaffold.yaml
           imagePullPolicy: Never # It is a local image, so its not pulled
           # ports:
           #   - containerPort: 5000

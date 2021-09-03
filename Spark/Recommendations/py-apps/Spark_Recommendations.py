@@ -8,10 +8,125 @@ import pyspark.sql.functions as F
 from pyspark.sql.types import DoubleType
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.feature_extraction.text import CountVectorizer
-from legerible import Legerible
 from pyspark import SparkConf
 from pyspark import SparkContext
 from pyspark.mllib.feature import HashingTF, IDF
+
+import psycopg2
+import psycopg2.extras
+import sqlalchemy
+import time
+
+class Legerible:
+
+    def __init__(self):
+        self.s_user = None
+        self.s_user = None
+
+        self.alchemy_engine = None
+        self.alchemy_connection = None
+        self.psycopg2_connection = None
+
+        self.b_connected = False
+        self.b_initialised = False
+
+        # establishes connection to database
+        self.connect()
+
+        # tests if database has entries
+        self.test()
+
+    # ###########################################################################################################
+    # INIT FUNCTIONS
+
+    def connect(self):
+        """
+        makes a sqlalchemy and psycopg2 connection to the db.
+
+        :return:
+        """
+
+        while self.b_connected is False:
+            try:
+                self.alchemy_engine = sqlalchemy.create_engine(
+                    'postgres+psycopg2://postgres:1234@database:5432/postgres')
+                self.alchemy_connection = self.alchemy_engine.connect()
+                self.psycopg2_connection = psycopg2.connect(database="postgres", user="postgres", port=5432,
+                                                            password="1234", host="database")
+                self.b_connected = True
+                print("Database Connected")
+                logging.info("Connected to DB")
+            except Exception as an_exception:
+                logging.error(an_exception)
+                logging.error("Not connected to DB")
+                time.sleep(5)
+        return True
+
+    def test(self, b_verbose=True):
+        """
+        tests the connection to the db.
+
+        :param b_verbose:
+        :return:
+        """
+        # checks if data / tables are present if it fails it initialises the database
+        if self.b_connected:
+            try:
+                df = pd.read_sql_query("""SELECT true
+                                          FROM books
+                                          LIMIT 1; 
+                                      """,
+                                       self.alchemy_connection)
+                if b_verbose:
+                    print(df)
+                return df
+            except Exception as err:
+                self.init_db()
+                logging.error("Tables not initialized")
+        return False
+
+
+    # ###########################################################################################################
+    # USING FUNCTIONS
+
+
+    def get_select(self, s_sql_statement: str) -> object:
+        """
+        This Function needs a Select-Statements and returns the result in a df.
+
+        :param s_sql_statement:
+        :return df:
+        """
+        try:
+            df = pd.read_sql_query(s_sql_statement, self.alchemy_connection)
+        except Exception as an_exception:
+            logging.error(an_exception)
+            logging.error("Query couldn't be executed.")
+            return False
+        return df
+
+    def exec_statement(self, sql: str):
+        """
+        can execute every kind of Sql-statement but does NOT return a response.
+
+        Use for:
+            - CALL Procedure
+            - UPDATE Statement
+        :param sql:
+        :return:
+        """
+        try:
+            db_cursor = self.psycopg2_connection.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            db_cursor.execute(sql)
+            self.psycopg2_connection.commit()
+            db_cursor.close()
+            return True
+        except psycopg2.errors.InFailedSqlTransaction:
+            self.b_connected = False
+            self.connect()
+            logging.error("Transaction Failed - Review given inputs!")
+            return False
+
 
 leg = Legerible()
 
@@ -21,16 +136,15 @@ all_loans = leg.get_select("""SELECT L.n_loan_id AS Loan_ID, L.ts_now as Timesta
                                       LEFT JOIN Books AS B ON (L.n_book_id = B.n_book_id)
                                       LEFT JOIN Users AS U ON (L.n_user_id = U.n_user_id)""")
 
-sc = SparkSession.builder.appName("spark-app").master("local[*]").getOrCreate()
+sc = SparkSession.builder.appName("recommendations").getOrCreate()
 sparkContext = sc.sparkContext
-lines = sc.read.csv("isbn.txt")
 
 
 def count_books(self):
     return self.distinct().count()
 
 
-top_x = all_loans.groupby("books_id").count()
+top_x = all_loans.groupby("book_id").count()
 count_b = 33  # count_books(lines)
 count_l = count_books(all_loans)
 
@@ -45,7 +159,7 @@ leg = Legerible()
 
 def recommendation(user_id):
     # getting all loaned books by the user
-    loans = leg.get_selectt(f"""SELECT L.ts_now as Timestamp, B.s_isbn AS ISBN, B.s_title AS Title,
+    loans = leg.get_select(f"""SELECT L.ts_now as Timestamp, B.s_isbn AS ISBN, B.s_title AS Title,
                                         B.s_aut_first_name AS Author_first_name, B.s_aut_last_name AS Author_last_name
                                     FROM Loan AS L
                                         LEFT JOIN Books AS B ON (L.n_book_id = B.n_book_id)

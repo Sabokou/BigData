@@ -1,5 +1,6 @@
 # import sqlalchemy
 import psycopg2
+import psycopg2.extras
 
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import *
@@ -9,7 +10,7 @@ windowDuration = '5 minutes'
 slidingDuration = '1 minute'
 # Example Part 1
 # Create a spark session
-spark = SparkSession.builder.appName("Data Streaming").getOrCreate()
+spark = SparkSession.builder.appName("Book Loans").getOrCreate()
 
 # Set log level
 spark.sparkContext.setLogLevel('WARN')
@@ -152,4 +153,3 @@ dbInsertStream = popular.writeStream \
 
 # Wait for termination
 spark.streams.awaitAnyTermination()
-print("...working")
