@@ -14,7 +14,7 @@ WORKDIR /jump-start-spark/py-apps
 COPY py-apps/Spark_Recommendations.py .
 
 # Package all py-apps into a zip
-# RUN zip -r ./py-apps/bundled-apps.zip ./py-apps/*.py
+RUN zip -r ./py-apps/bundled-apps.zip ./py-apps/legerible.py
 
 # create dependencies sub folder
 WORKDIR /jump-start-spark/dependencies
@@ -58,6 +58,7 @@ ENTRYPOINT spark-submit  \
 	--packages com.datastax.spark:spark-cassandra-connector_2.12:3.1.0 \
 	--packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.1.2 \
 	--archives pyspark_venv.tar.gz#environment \
+	--py-files /py-apps/bundled-apps.zip
 	/jump-start-spark/py-apps/Spark_Recommendations.py
 
 RUN echo "Spark-submit was executed"
