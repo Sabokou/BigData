@@ -54,6 +54,10 @@ The fourth page - the "loans" page - is an overview of all loans currently in th
 
 ## Architecture and Design
 
+<img src="Documentation\assets\kappa-architecture.jpg" >
+
+<br>
+<br>
 The chosen architecture for the big data application follows the **Kappa paradigm**. Data is streamed into the big data
 processing system (in our case Spark) and processed as a stream (streaming is achieved with Kafka). The streaming data
 is enriched by static data from the database to ensure that all relevant data is taken into consideration.
