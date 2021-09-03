@@ -1,3 +1,5 @@
+import logging
+
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import *
 import numpy as np
@@ -6,7 +8,7 @@ import pyspark.sql.functions as F
 from pyspark.sql.types import DoubleType
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.feature_extraction.text import CountVectorizer
-from Webapp.code.app.legerible import Legerible
+from legerible import Legerible
 from pyspark import SparkConf
 from pyspark import SparkContext
 from pyspark.mllib.feature import HashingTF, IDF
@@ -23,23 +25,26 @@ sc = SparkSession.builder.appName("spark-app").master("local[*]").getOrCreate()
 sparkContext = sc.sparkContext
 lines = sc.read.csv("isbn.txt")
 
+
 def count_books(self):
     return self.distinct().count()
 
+
 top_x = all_loans.groupby("books_id").count()
-count_b = count_books(lines)
+count_b = 33  # count_books(lines)
 count_l = count_books(all_loans)
 
+
 def return_counts():
-    a = []
-    a.append(count_b)
-    a.append(count_l)
-    a.append(top_x)
+    a = [count_b, count_l, top_x]
     return a
+
+
 leg = Legerible()
 
+
 def recommendation(user_id):
-    #getting all loaned books by the user
+    # getting all loaned books by the user
     loans = leg.get_selectt(f"""SELECT L.ts_now as Timestamp, B.s_isbn AS ISBN, B.s_title AS Title,
                                         B.s_aut_first_name AS Author_first_name, B.s_aut_last_name AS Author_last_name
                                     FROM Loan AS L
@@ -52,7 +57,7 @@ def recommendation(user_id):
                                       s_aut_last_name AS Author_last_name
                                    FROM BOOKS""")
 
-    #getting last loaned book
+    # getting last loaned book
     expr = [F.last(col).alias(col) for col in loans.columns]
     last_loaned = loans.agg(*expr).select("book_id").collect()[0][-1]
 
@@ -116,7 +121,7 @@ def recommendation(user_id):
         .collect()
 
     import pyspark.sql.functions as psf
-    #creating model
+    # creating model
     df = rdd.toDF(["ID", "Office_Loc"]) \
         .withColumn("Office_Loc", psf.split(psf.regexp_replace("Office_Loc", " ", ""), ','))
 
@@ -124,27 +129,37 @@ def recommendation(user_id):
     hashingTF = HashingTF(inputCol="Office_Loc", outputCol="tf")
     tf = hashingTF.transform(df)
 
-    #fitting data into model
+    # fitting data into model
     idf = IDF(inputCol="tf", outputCol="feature").fit(tf)
     tfidf = idf.transform(tf)
 
     from pyspark.ml.feature import Normalizer
-    #normilize feautures
+    # normalize features
     normalizer = Normalizer(inputCol="feature", outputCol="norm")
     data = normalizer.transform(tfidf)
 
     dot_udf = psf.udf(lambda x, y: float(x.dot(y)), DoubleType())
 
-    #creating recommendation dataframe
-    rec_df= data.alias("loaned_book").join(data.alias("book_id"), psf.col("loaned_book.ID") < psf.col("book_id.ID"))
-    #calculating the score point between last loaned book and all books
-    rec_df = rec_df.select(psf.col("loaned_book.ID").alias("loaned_book"), psf.col("book_id.ID").alias("book_id"), dot_udf("loaned_book.norm", "book_id.norm").alias("Score"))
+    # creating recommendation dataframe
+    rec_df = data.alias("loaned_book").join(data.alias("book_id"), psf.col("loaned_book.ID") < psf.col("book_id.ID"))
+    # calculating the score point between last loaned book and all books
+    rec_df = rec_df.select(psf.col("loaned_book.ID").alias("loaned_book"), psf.col("book_id.ID").alias("book_id"),
+                           dot_udf("loaned_book.norm", "book_id.norm").alias("Score"))
     rec_df = rec_df.filter(F.col('loaned_book') == last_loaned).sort(col('Score').desc())
 
     result = []
     for i in range(0, 4):
         result.append(rec_df.select('book_id').collect()[i][0])
-        
-    #returning result in form of array with top4 recommendation book_id
+
+    # returning result in form of array with top4 recommendation book_id
     return result
 
+
+try:
+    for ids in range(3):
+        result = recommendation(id)
+        print(f"For user {id} the following recommendations were created: {result}")
+        for recommendations in result:
+            leg.exec_statement(f"INSERT INTO RECOMMENDATIONS (n_user_id, n_book_id) VALUES ({id}, {recommendations})")
+except Exception as exc:
+    logging.error("Handled exception for recommendation system - no new fields added to database this iteration")
