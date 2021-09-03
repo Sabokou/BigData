@@ -26,23 +26,6 @@ spark.sparkContext.setLogLevel('WARN')
 # The fields of that table are just preliminary and you are welcome to change them in k8s/start_cassandra.yaml
 
 
-def save_to_cassandra(spark_df, cass_table, cass_keyspace="legerible"):
-    """
-    Append a spark dataframe to an existing cassandra table.
-    
-    Param
-    ----
-    spark_df: dataframe in pyspark dataframe format. Pandas dataframes are not supported, but you may convert them.
-    cass_table: name of the table in the cassandra database e.g. "book_recommendation"
-    cass_keyspace: name of the keyspace in which the table resides e.g. "legerible"
-    """
-    spark_df.write \
-        .format("org.apache.spark.sql.cassandra") \
-        .mode("append") \
-        .options(table=cass_table, keyspace=cass_keyspace) \
-        .save()
-
-
 # Example Part 2
 # Read messages from Kafka
 kafkaMessages = spark \
@@ -137,8 +120,25 @@ def save_to_database(batchDataframe, batchId):
 
         db_cursor.close()
 
+    def save_to_cassandra(spark_df, cass_table, cass_keyspace="legerible"):
+        """
+        Append a spark dataframe to an existing cassandra table.
+
+        Param
+        ----
+        spark_df: dataframe in pyspark dataframe format. Pandas dataframes are not supported, but you may convert them.
+        cass_table: name of the table in the cassandra database e.g. "book_recommendation"
+        cass_keyspace: name of the keyspace in which the table resides e.g. "legerible"
+        """
+        spark_df.write \
+            .format("org.apache.spark.sql.cassandra") \
+            .mode("append") \
+            .options(table=cass_table, keyspace=cass_keyspace) \
+            .save()
+
     # Perform batch UPSERTS per data partition
     batchDataframe.foreachPartition(save_to_db)
+    save_to_cassandra(batchDataframe, "loan_counts")
 
 
 # Example Part 7
