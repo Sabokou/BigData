@@ -1,4 +1,4 @@
-flask~=1.1.2
+flask
 python3-memcached
 Flask-Caching
 
